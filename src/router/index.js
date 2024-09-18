@@ -54,16 +54,59 @@ export const asyncRoutes = [
     ],
   },
   {
-    path: '/test',
+    path: '/basicProfile',
     component: Layout,
     redirect: 'noRedirect',
+    name: 'BasicProfile',
+    alwaysShow: true,
+    meta: { title: '其他基本設定檔', icon: 'box-open' },
     children: [
       {
-        path: 'test',
-        name: 'Device',
-        component: () => import('@/views/test/index'),
+        path: 'currency',
+        name: 'Currency',
+        component: () => import('@/views/basicProfile/currency/index'),
         meta: {
-          title: '平台機種設計檔',
+          title: '貨幣設定檔 Currency',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'device',
+        name: 'Device',
+        component: () => import('@/views/basicProfile/device/index'),
+        meta: {
+          title: '平台機種 Device',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'voice',
+        name: 'Voice',
+        component: () => import('@/views/basicProfile/voice/index'),
+        meta: {
+          title: '語音 Voice',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'rating',
+        name: 'Rating',
+        component: () => import('@/views/basicProfile/rating/index'),
+        meta: {
+          title: '分級 Rating',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'ratingType',
+        name: 'RatingType',
+        component: () => import('@/views/basicProfile/ratingType/index'),
+        meta: {
+          title: '分級分類 Rating_type',
           icon: 'chalkboard',
           permissions: ['admin'],
         },
@@ -75,7 +118,7 @@ export const asyncRoutes = [
     component: Layout,
     redirect: 'noRedirect',
     name: 'Vab',
-    alwaysShow: true,
+    //alwaysShow: true,
     meta: { title: '组件', icon: 'box-open' },
     children: [
       {

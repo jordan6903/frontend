@@ -30,41 +30,24 @@
       </vab-query-form-left-panel>
     </vab-query-form>
 
-
     <el-table
       ref="tableSort"
       v-loading="listLoading"
       :data="list"
+      :default-sort="{ prop: 'sort' }"
       :element-loading-text="elementLoadingText"
       :height="height"
-      :default-sort="{prop:'sort'}"
       @selection-change="setSelectRows"
       @sort-change="tableSortChange"
     >
       <el-table-column show-overflow-tooltip type="selection" width="55" />
-      <el-table-column label="代碼" prop="device_id" show-overflow-tooltip sortable width="95"/>
-      <!--
-      <el-table-column label="代碼" prop="device_id" show-overflow-tooltip width="95">
-        <template #default="scope">
-          {{ scope.$index + 1 }}
-        </template>
-      </el-table-column>
-      -->
-      <el-table-column label="名稱" prop="fullName" show-overflow-tooltip />
-      <el-table-column label="簡稱" prop="shortName" show-overflow-tooltip />
-      <!--
-      <el-table-column label="头像" show-overflow-tooltip>
-        <template #default="{ row }">
-          <el-image v-if="imgShow" :preview-src-list="imageList" :src="row.img" />
-        </template>
-      </el-table-column>
-      -->
+      <el-table-column label="代碼" prop="voice_id" show-overflow-tooltip sortable width="95" />
+      <el-table-column label="名稱" prop="name" show-overflow-tooltip />
       <el-table-column label="敘述" prop="content" show-overflow-tooltip />
       <el-table-column label="啟用" prop="use_yn" show-overflow-tooltip>
         <template #default="{ row }">
-          <vab-icon v-show="row.use_yn" :icon="['fas', 'check']"></vab-icon>
-          <vab-icon v-show="!row.use_yn" :icon="['fas', 'times']"></vab-icon>
-          <!--<span>{{ row.use_yn ? '是' : '否' }}</span>-->
+          <vab-icon v-show="row.use_yn" :icon="['fas', 'check']" />
+          <vab-icon v-show="!row.use_yn" :icon="['fas', 'times']" />
         </template>
       </el-table-column>
       <el-table-column label="排序" prop="sort" show-overflow-tooltip sortable />
@@ -94,7 +77,7 @@
   import TableEdit from './components/TableEdit'
 
   export default {
-    name: 'Device',
+    name: 'Voice',
     components: {
       TableEdit,
     },
@@ -110,9 +93,9 @@
     },
     data() {
       return {
-        url: 'http://localhost:5252/api/devices',
-        device: [],
-        return_msg: "",
+        url: 'http://localhost:5252/api/voice_type',
+        return_msg: '',
+        return_success: '',
         imgShow: true,
         list: [],
         imageList: [],
@@ -121,7 +104,7 @@
         total: 0,
         background: true,
         selectRows: '',
-        elementLoadingText: '正在加载...',
+        elementLoadingText: '正在加載...',
         queryForm: {
           pageNo: 1,
           pageSize: 20,
@@ -136,20 +119,42 @@
         return this.$baseTableHeight()
       },
     },
+    // watch: {
+    //   list (newVal, oldVal) {
+    //     console.log("===watch list");
+    //     this.list.forEach((item, index) => {
+    //       item.upd_date = this.datetimeformat(item.upd_date);
+    //       item.create_dt = this.datetimeformat(item.create_dt);
+    //     })
+    //   }
+    // },
     created() {
-      console.log('===created');
+      console.log('===created')
       this.fetchData()
     },
     beforeDestroy() {
-      console.log('===beforeDestroy');
+      console.log('===beforeDestroy')
       clearTimeout(this.timeOutID)
     },
     mounted() {
-      console.log('===mounted');
+      console.log('===mounted')
     },
     methods: {
+      // datetimeformat(dateString){
+      //   if(!dateString){
+      //     return "";
+      //   }else{
+      //     const date = new Date(dateString);
+      //     const year = date.getFullYear();
+      //     const month = String(date.getMonth() + 1).padStart(2, '0');
+      //     const day = String(date.getDate()).padStart(2, '0');
+      //     const hours = String(date.getHours()).padStart(2, '0');
+      //     const minutes = String(date.getMinutes()).padStart(2, '0');
+      //     return `${year}-${month}-${day} ${hours}:${minutes}`;
+      //   }
+      // },
       tableSortChange() {
-        console.log('===methods tableSortChange');
+        console.log('===methods tableSortChange')
         /*
         const imageList = []
         this.$refs.tableSort.tableData.forEach((item, index) => {
@@ -159,41 +164,50 @@
         */
       },
       setSelectRows(val) {
-        console.log('===methods setSelectRows');
+        console.log('===methods setSelectRows')
         this.selectRows = val
       },
       handleAdd() {
-        console.log('===methods handleAdd');
+        console.log('===methods handleAdd')
         this.$refs['edit'].showEdit()
       },
       handleEdit(row) {
-        console.log('===methods handleEdit');
+        console.log('===methods handleEdit')
         this.$refs['edit'].showEdit(row)
       },
       handleDelete(row) {
-        console.log('===methods handleDelete');
-        console.log(row.device_id);
-        if (row.device_id) {
+        console.log('===methods handleDelete')
+        console.log(row.voice_id)
+        if (row.voice_id) {
           this.$baseConfirm('你確定要刪除當前項嗎?', null, async () => {
             //const { msg } = await doDelete({ ids: row.id })
 
-            let ls_url = this.url;
-            ls_url += '/' + row.device_id;
-            
-            await axios
-                .delete(ls_url, {})
-                .then((response) => (this.return_msg = response.data.message))
-                .catch(function (error) {
-                  // 请求失败处理
-                  console.log(error);
-                });
+            let ls_url = this.url
+            ls_url += `/${row.voice_id}`
 
-            this.$baseMessage(this.return_msg, 'success');
-            this.fetchData();
+            await axios
+              .delete(ls_url, {})
+              .then((response) => (this.return_msg = response.data.message))
+              .catch(function (error) {
+                // 请求失败处理
+                console.log(error)
+              })
+
+            //拆解
+            let msg_array = this.return_msg.split('#')
+            this.return_success = msg_array[0]
+            this.return_msg = msg_array[1]
+
+            this.$baseMessage(this.return_msg, 'success')
+
+            //成功就關閉視窗
+            if (this.return_success == 'Y') {
+              this.fetchData()
+            }
           })
         } else {
           if (this.selectRows.length > 0) {
-            this.$baseMessage('尚未開放此功能', 'error');
+            this.$baseMessage('尚未開放此功能', 'error')
             // const ids = this.selectRows.map((item) => item.id).join()
             // this.$baseConfirm('你确定要删除选中项吗', null, async () => {
             //   const { msg } = await doDelete({ ids: ids })
@@ -201,50 +215,49 @@
             //   this.fetchData()
             // })
           } else {
-            this.$baseMessage('未选中任何行', 'error')
+            this.$baseMessage('未選中任何一行', 'error')
             return false
           }
         }
       },
       handleSizeChange(val) {
-        console.log('===methods handleSizeChange');
+        console.log('===methods handleSizeChange')
         this.queryForm.pageSize = val
         this.fetchData()
       },
       handleCurrentChange(val) {
-        console.log('===methods handleCurrentChange');
+        console.log('===methods handleCurrentChange')
         this.queryForm.pageNo = val
         this.fetchData()
       },
       handleQuery() {
-        console.log('===methods handleQuery');
+        console.log('===methods handleQuery')
         this.queryForm.pageNo = 1
         this.fetchData()
       },
 
       async fetchData() {
-        console.log('===methods fetchData');
+        console.log('===methods fetchData')
         this.listLoading = true
 
-        let ls_url = this.url;
+        let ls_url = this.url
 
-        if (this.queryForm.use_yn_set){
-          ls_url += "?UseYN=Y"
-        }else{
-          ls_url += "?UseYN=N"
+        if (this.queryForm.use_yn_set) {
+          ls_url += '?UseYN=Y'
+        } else {
+          ls_url += '?UseYN=N'
         }
 
-        if (this.queryForm.searchword != ""){
-          ls_url += "&searchword=" + this.queryForm.searchword;
+        if (this.queryForm.searchword != '') {
+          ls_url += `&searchword=${this.queryForm.searchword}`
         }
 
         await axios
           .get(ls_url)
           .then((response) => (this.list = response.data))
           .catch(function (error) {
-            // 请求失败处理
-            console.log(error);
-          });
+            console.log(error)
+          })
 
         /*
         const imageList = []
@@ -253,21 +266,21 @@
         })
         this.imageList = imageList
         */
-        this.total = this.list.length;
+        this.total = this.list.length
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
         }, 500)
       },
 
       testMessage() {
-        console.log('===methods testMessage');
+        console.log('===methods testMessage')
         this.$baseMessage('test1', 'success')
       },
 
       testALert() {
-        console.log('===methods testALert');
+        console.log('===methods testALert')
         this.$baseAlert('11')
-        this.$baseAlert('11', '自定义标题', () => {
+        this.$baseAlert('11', '自定義標題', () => {
           /* 可以写回调; */
         })
         this.$baseAlert('11', null, () => {
@@ -276,7 +289,7 @@
       },
 
       testConfirm() {
-        console.log('===methods testConfirm');
+        console.log('===methods testConfirm')
         this.$baseConfirm(
           '你确定要执行该操作?',
           null,
@@ -290,7 +303,7 @@
       },
 
       testNotify() {
-        console.log('===methods testNotify');
+        console.log('===methods testNotify')
         this.$baseNotify('测试消息提示', 'test', 'success', 'bottom-right')
       },
     },
