@@ -41,29 +41,14 @@
       @sort-change="tableSortChange"
     >
       <el-table-column show-overflow-tooltip type="selection" width="55" />
-      <el-table-column label="代碼" prop="device_id" show-overflow-tooltip sortable width="95" />
-      <!--
-      <el-table-column label="代碼" prop="device_id" show-overflow-tooltip width="95">
-        <template #default="scope">
-          {{ scope.$index + 1 }}
-        </template>
-      </el-table-column>
-      -->
-      <el-table-column label="名稱" prop="fullName" show-overflow-tooltip />
+      <el-table-column label="代碼" prop="rating_type" show-overflow-tooltip sortable width="95" />
+      <el-table-column label="名稱" prop="name" show-overflow-tooltip />
       <el-table-column label="簡稱" prop="shortName" show-overflow-tooltip />
-      <!--
-      <el-table-column label="头像" show-overflow-tooltip>
-        <template #default="{ row }">
-          <el-image v-if="imgShow" :preview-src-list="imageList" :src="row.img" />
-        </template>
-      </el-table-column>
-      -->
       <el-table-column label="敘述" prop="content" show-overflow-tooltip />
       <el-table-column label="啟用" prop="use_yn" show-overflow-tooltip>
         <template #default="{ row }">
           <vab-icon v-show="row.use_yn" :icon="['fas', 'check']" />
           <vab-icon v-show="!row.use_yn" :icon="['fas', 'times']" />
-          <!--<span>{{ row.use_yn ? '是' : '否' }}</span>-->
         </template>
       </el-table-column>
       <el-table-column label="排序" prop="sort" show-overflow-tooltip sortable />
@@ -93,7 +78,7 @@
   import TableEdit from './components/TableEdit'
 
   export default {
-    name: 'Device',
+    name: 'RatingType',
     components: {
       TableEdit,
     },
@@ -109,9 +94,9 @@
     },
     data() {
       return {
-        url: 'http://localhost:5252/api/devices',
-        device: [],
+        url: 'http://localhost:5252/api/rating_type',
         return_msg: '',
+        return_success: '',
         imgShow: true,
         list: [],
         imageList: [],
@@ -135,6 +120,15 @@
         return this.$baseTableHeight()
       },
     },
+    // watch: {
+    //   list (newVal, oldVal) {
+    //     console.log("===watch list");
+    //     this.list.forEach((item, index) => {
+    //       item.upd_date = this.datetimeformat(item.upd_date);
+    //       item.create_dt = this.datetimeformat(item.create_dt);
+    //     })
+    //   }
+    // },
     created() {
       console.log('===created')
       this.fetchData()
@@ -147,6 +141,19 @@
       console.log('===mounted')
     },
     methods: {
+      // datetimeformat(dateString){
+      //   if(!dateString){
+      //     return "";
+      //   }else{
+      //     const date = new Date(dateString);
+      //     const year = date.getFullYear();
+      //     const month = String(date.getMonth() + 1).padStart(2, '0');
+      //     const day = String(date.getDate()).padStart(2, '0');
+      //     const hours = String(date.getHours()).padStart(2, '0');
+      //     const minutes = String(date.getMinutes()).padStart(2, '0');
+      //     return `${year}-${month}-${day} ${hours}:${minutes}`;
+      //   }
+      // },
       tableSortChange() {
         console.log('===methods tableSortChange')
         /*
@@ -171,13 +178,13 @@
       },
       handleDelete(row) {
         console.log('===methods handleDelete')
-        console.log(row.device_id)
-        if (row.device_id) {
+        console.log(row.rating_type)
+        if (row.rating_type) {
           this.$baseConfirm('你確定要刪除當前項嗎?', null, async () => {
             //const { msg } = await doDelete({ ids: row.id })
 
             let ls_url = this.url
-            ls_url += `/${row.device_id}`
+            ls_url += `/${row.rating_type}`
 
             await axios
               .delete(ls_url, {})
@@ -187,8 +194,17 @@
                 console.log(error)
               })
 
+            //拆解
+            let msg_array = this.return_msg.split('#')
+            this.return_success = msg_array[0]
+            this.return_msg = msg_array[1]
+
             this.$baseMessage(this.return_msg, 'success')
-            this.fetchData()
+
+            //成功就關閉視窗
+            if (this.return_success == 'Y') {
+              this.fetchData()
+            }
           })
         } else {
           if (this.selectRows.length > 0) {

@@ -76,7 +76,7 @@ export const asyncRoutes = [
         name: 'Device',
         component: () => import('@/views/basicProfile/device/index'),
         meta: {
-          title: '平台機種 Device',
+          title: '平台機種設計檔 Device',
           icon: 'chalkboard',
           permissions: ['admin'],
         },
@@ -86,7 +86,7 @@ export const asyncRoutes = [
         name: 'Voice',
         component: () => import('@/views/basicProfile/voice/index'),
         meta: {
-          title: '語音 Voice',
+          title: '語音類型設計檔 Voice_type',
           icon: 'chalkboard',
           permissions: ['admin'],
         },
@@ -96,7 +96,7 @@ export const asyncRoutes = [
         name: 'Rating',
         component: () => import('@/views/basicProfile/rating/index'),
         meta: {
-          title: '分級 Rating',
+          title: '分級設定檔 Rating',
           icon: 'chalkboard',
           permissions: ['admin'],
         },
@@ -106,7 +106,140 @@ export const asyncRoutes = [
         name: 'RatingType',
         component: () => import('@/views/basicProfile/ratingType/index'),
         meta: {
-          title: '分級分類 Rating_type',
+          title: '分級分類設定檔 Rating_type',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'staff',
+        component: EmptyLayout,
+        redirect: 'noRedirect',
+        name: 'Staff',
+        alwaysShow: true,
+        meta: {
+          title: '製作人員相關',
+          permissions: ['admin'],
+        },
+        children: [
+          {
+            path: 'staffInfo',
+            name: 'StaffInfo',
+            component: () => import('@/views/basicProfile/staff/staffInfo/index'),
+            meta: {
+              title: '製作人員資訊 Staff_info',
+              icon: 'chalkboard',
+              permissions: ['admin'],
+            },
+          },
+          {
+            path: 'staffType',
+            name: 'StaffType',
+            component: () => import('@/views/basicProfile/staff/staffType/index'),
+            meta: {
+              title: '工作類型設計檔 Staff_type',
+              icon: 'chalkboard',
+              permissions: ['admin'],
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: '/companyProfile',
+    component: Layout,
+    redirect: 'noRedirect',
+    name: 'CompanyProfile',
+    alwaysShow: true,
+    meta: { title: '公司', icon: 'box-open' },
+    children: [
+      {
+        path: 'companyRelationInfo',
+        name: 'CompanyRelationInfo',
+        component: () => import('@/views/companyProfile/companyRelationInfo/index'),
+        meta: {
+          title: '公司間關聯設計檔 Company_relation_info',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'companyType',
+        name: 'CompanyType',
+        component: () => import('@/views/companyProfile/companyType/index'),
+        meta: {
+          title: '公司類型設定檔 Company_type',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/productProfile',
+    component: Layout,
+    redirect: 'noRedirect',
+    name: 'ProductProfile',
+    alwaysShow: true,
+    meta: { title: '遊戲', icon: 'box-open' },
+    children: [
+      {
+        path: 'productScoreType',
+        name: 'ProductScoreType',
+        component: () => import('@/views/productProfile/productScoreType/index'),
+        meta: {
+          title: '遊戲評分類型設定檔 Product_score_type',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'productRelationInfo',
+        name: 'ProductRelationInfo',
+        component: () => import('@/views/productProfile/productRelationInfo/index'),
+        meta: {
+          title: '遊戲間關聯設計檔 Product_relation_info',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'productTypeClass',
+        name: 'ProductTypeClass',
+        component: () => import('@/views/productProfile/productTypeClass/index'),
+        meta: {
+          title: '屬性標籤之分類設計檔 Product_type_class',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'productTypeInfo',
+        name: 'ProductTypeInfo',
+        component: () => import('@/views/productProfile/productTypeInfo/index'),
+        meta: {
+          title: '屬性標籤設計檔 Product_type_info',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/websiteProfile',
+    component: Layout,
+    redirect: 'noRedirect',
+    name: 'WebsiteProfile',
+    alwaysShow: true,
+    meta: { title: '外連網址與圖片', icon: 'box-open' },
+    children: [
+      {
+        path: 'websiteType',
+        name: 'WebsiteType',
+        component: () => import('@/views/websiteProfile/websiteType/index'),
+        meta: {
+          title: '網址種類設定檔 Website_Type',
           icon: 'chalkboard',
           permissions: ['admin'],
         },

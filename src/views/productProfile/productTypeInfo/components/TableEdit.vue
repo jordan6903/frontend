@@ -1,14 +1,30 @@
 <template>
   <el-dialog :title="title" :visible.sync="dialogFormVisible" width="500px" @close="close">
     <el-form ref="form" label-width="80px" :model="form" :rules="rules">
-      <el-form-item label="ID" prop="rating_type">
-        <el-input v-model.number="form.rating_type" autocomplete="off" :disabled="form_lock" maxlength="3" type="number" />
+      <el-form-item label="代碼" prop="p_type_id">
+        <el-input v-model.trim="form.p_type_id" autocomplete="off" :disabled="form_lock" maxlength="5" />
       </el-form-item>
-      <el-form-item label="名稱" prop="name">
-        <el-input v-model.trim="form.name" autocomplete="off" maxlength="100" />
+      <el-form-item label="分類" prop="p_type_class">
+        <el-select v-model="form.p_type_class" placeholder="請選擇分類">
+          <el-option
+            v-for="type in form_type"
+            :key="type.p_type_class"
+            :label="type.p_type_class + ' ' + type.name"
+            :value="type.p_type_class"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="名稱" prop="fullName">
+        <el-input v-model.trim="form.fullName" autocomplete="off" maxlength="100" />
       </el-form-item>
       <el-form-item label="簡稱" prop="shortName">
         <el-input v-model.trim="form.shortName" autocomplete="off" maxlength="100" />
+      </el-form-item>
+      <el-form-item label="日文" prop="fullName_JP">
+        <el-input v-model.trim="form.fullName_JP" autocomplete="off" maxlength="100" />
+      </el-form-item>
+      <el-form-item label="英文" prop="fullName_EN">
+        <el-input v-model.trim="form.fullName_EN" autocomplete="off" maxlength="100" />
       </el-form-item>
       <el-form-item label="敘述" prop="content">
         <el-input v-model.trim="form.content" autocomplete="off" maxlength="20" />
@@ -39,18 +55,22 @@
         return_msg: '',
         return_success: '',
         form: {
-          rating_type: '',
-          name: '',
+          p_type_id: '',
+          p_type_class: '',
+          fullName: '',
           shortName: '',
+          fullName_JP: '',
+          fullName_EN: '',
           content: '',
           use_yn: true,
           sort: 0,
         },
+        form_type: [],
         form_lock: false,
         rules: {
-          rating_type: [{ required: true, trigger: 'blur', message: '請輸入代號' }],
-          name: [{ required: true, trigger: 'blur', message: '請輸入名稱' }],
-          shortName: [{ required: true, trigger: 'blur', message: '請輸入簡稱' }],
+          p_type_id: [{ required: true, trigger: 'blur', message: '請輸入代號' }],
+          p_type_class: [{ required: true, trigger: 'blur', message: '請選擇分類' }],
+          fullName: [{ required: true, trigger: 'blur', message: '請輸入名稱' }],
         },
         title: '',
         dialogFormVisible: false,
@@ -58,9 +78,10 @@
     },
     created() {},
     methods: {
-      showEdit(row) {
+      showEdit(row, list_type) {
         console.log('===showEdit')
         console.log(row)
+        console.log(list_type)
         if (!row) {
           this.title = '新增'
           this.form_lock = false
@@ -68,6 +89,7 @@
           this.title = '編輯'
           this.form = Object.assign({}, row)
           this.form_lock = true
+          this.form_type = list_type
         }
         this.dialogFormVisible = true
       },
@@ -79,7 +101,7 @@
         this.$emit('fetch-data')
       },
       toUpperCase(event) {
-        this.form.rating_type = event.toUpperCase()
+        this.form.p_type_id = event.toUpperCase()
       },
       save() {
         console.log('===save')
@@ -88,7 +110,7 @@
             if (!this.form_lock) {
               console.log('新增')
               this.title = '新增'
-              this.url = 'http://localhost:5252/api/rating_type'
+              this.url = 'http://localhost:5252/api/product_type_info'
               this.params = this.form
 
               console.log(this.form)
@@ -104,7 +126,7 @@
             } else {
               console.log('編輯')
               this.title = '編輯'
-              this.url = `http://localhost:5252/api/rating_type/${this.form.rating_type}`
+              this.url = `http://localhost:5252/api/product_type_info/${this.form.p_type_id}`
               this.params = this.form
 
               console.log(this.form)

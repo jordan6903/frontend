@@ -13,18 +13,6 @@
           <el-form-item label="啟用">
             <el-switch v-model="queryForm.use_yn_set" />
           </el-form-item>
-          &nbsp;&nbsp;&nbsp;&nbsp;
-          <el-form-item label="分類">
-            <el-select v-model="queryForm.type" placeholder="請選擇分類">
-              <el-option label="% 全選" value="%" />
-              <el-option
-                v-for="type in list_type"
-                :key="type.rating_type"
-                :label="type.rating_type + ' ' + type.name"
-                :value="type.rating_type"
-              />
-            </el-select>
-          </el-form-item>
         </el-form>
       </vab-query-form-left-panel>
     </vab-query-form>
@@ -33,12 +21,6 @@
       <vab-query-form-left-panel>
         <el-button icon="el-icon-plus" type="primary" @click="handleAdd">新增</el-button>
         <el-button icon="el-icon-delete" type="danger" @click="handleDelete">删除</el-button>
-        <!--
-        <el-button type="primary" @click="testMessage">baseMessage</el-button>
-        <el-button type="primary" @click="testALert">baseAlert</el-button>
-        <el-button type="primary" @click="testConfirm">baseConfirm</el-button>
-        <el-button type="primary" @click="testNotify">baseNotify</el-button>
-        -->
       </vab-query-form-left-panel>
     </vab-query-form>
 
@@ -46,19 +28,16 @@
       ref="tableSort"
       v-loading="listLoading"
       :data="list"
+      :default-sort="{ prop: 'type_id' }"
       :element-loading-text="elementLoadingText"
       :height="height"
       @selection-change="setSelectRows"
       @sort-change="tableSortChange"
     >
       <el-table-column show-overflow-tooltip type="selection" width="55" />
-      <el-table-column label="代碼" prop="rating_id" show-overflow-tooltip sortable width="95" />
-      <el-table-column label="分類" prop="type_Name" show-overflow-tooltip sortable width="150" />
+      <el-table-column label="代碼" prop="type_id" show-overflow-tooltip sortable width="95" />
       <el-table-column label="名稱" prop="name" show-overflow-tooltip />
-      <el-table-column label="簡稱" prop="shortName" show-overflow-tooltip />
-      <el-table-column label="日文" prop="name_JP" show-overflow-tooltip />
-      <el-table-column label="英文" prop="name_EN" show-overflow-tooltip />
-      <el-table-column label="敘述" prop="content" show-overflow-tooltip />
+      <el-table-column label="敘述" prop="remark" show-overflow-tooltip />
       <el-table-column label="啟用" prop="use_yn" show-overflow-tooltip>
         <template #default="{ row }">
           <vab-icon v-show="row.use_yn" :icon="['fas', 'check']" />
@@ -92,7 +71,7 @@
   import TableEdit from './components/TableEdit'
 
   export default {
-    name: 'Rating',
+    name: 'WebsiteType',
     components: {
       TableEdit,
     },
@@ -108,13 +87,11 @@
     },
     data() {
       return {
-        url: 'http://localhost:5252/api/rating',
-        url2: 'http://localhost:5252/api/rating_type',
+        url: 'http://localhost:5252/api/website_type',
         return_msg: '',
         return_success: '',
         imgShow: true,
         list: [],
-        list_type: [],
         imageList: [],
         listLoading: true,
         layout: 'total, sizes, prev, pager, next, jumper',
@@ -127,7 +104,6 @@
           pageSize: 20,
           searchword: '',
           use_yn_set: true,
-          type: '',
         },
         timeOutID: null,
       }
@@ -137,15 +113,6 @@
         return this.$baseTableHeight()
       },
     },
-    // watch: {
-    //   list (newVal, oldVal) {
-    //     console.log("===watch list");
-    //     this.list.forEach((item, index) => {
-    //       item.upd_date = this.datetimeformat(item.upd_date);
-    //       item.create_dt = this.datetimeformat(item.create_dt);
-    //     })
-    //   }
-    // },
     created() {
       console.log('===created')
       this.fetchData()
@@ -158,28 +125,8 @@
       console.log('===mounted')
     },
     methods: {
-      // datetimeformat(dateString){
-      //   if(!dateString){
-      //     return "";
-      //   }else{
-      //     const date = new Date(dateString);
-      //     const year = date.getFullYear();
-      //     const month = String(date.getMonth() + 1).padStart(2, '0');
-      //     const day = String(date.getDate()).padStart(2, '0');
-      //     const hours = String(date.getHours()).padStart(2, '0');
-      //     const minutes = String(date.getMinutes()).padStart(2, '0');
-      //     return `${year}-${month}-${day} ${hours}:${minutes}`;
-      //   }
-      // },
       tableSortChange() {
         console.log('===methods tableSortChange')
-        /*
-        const imageList = []
-        this.$refs.tableSort.tableData.forEach((item, index) => {
-          imageList.push(item.img)
-        })
-        this.imageList = imageList
-        */
       },
       setSelectRows(val) {
         console.log('===methods setSelectRows')
@@ -187,21 +134,19 @@
       },
       handleAdd() {
         console.log('===methods handleAdd')
-        this.$refs['edit'].showEdit(null, this.list_type)
+        this.$refs['edit'].showEdit()
       },
       handleEdit(row) {
         console.log('===methods handleEdit')
-        this.$refs['edit'].showEdit(row, this.list_type)
+        this.$refs['edit'].showEdit(row)
       },
       handleDelete(row) {
         console.log('===methods handleDelete')
-        console.log(row.rating_id)
-        if (row.rating_id) {
+        console.log(row.type_id)
+        if (row.type_id) {
           this.$baseConfirm('你確定要刪除當前項嗎?', null, async () => {
-            //const { msg } = await doDelete({ ids: row.id })
-
             let ls_url = this.url
-            ls_url += `/${row.rating_id}`
+            ls_url += `/${row.type_id}`
 
             await axios
               .delete(ls_url, {})
@@ -226,12 +171,6 @@
         } else {
           if (this.selectRows.length > 0) {
             this.$baseMessage('尚未開放此功能', 'error')
-            // const ids = this.selectRows.map((item) => item.id).join()
-            // this.$baseConfirm('你确定要删除选中项吗', null, async () => {
-            //   const { msg } = await doDelete({ ids: ids })
-            //   this.$baseMessage(msg, 'success')
-            //   this.fetchData()
-            // })
           } else {
             this.$baseMessage('未選中任何一行', 'error')
             return false
@@ -270,16 +209,6 @@
           ls_url += `searchword=${this.queryForm.searchword}` + '&'
         }
 
-        if (
-          this.queryForm.type !== '' &&
-          this.queryForm.type !== null &&
-          this.queryForm.type !== undefined &&
-          this.queryForm.type !== '%'
-        ) {
-          console.log(this.queryForm.type)
-          ls_url += `&rating_type=${this.queryForm.type}` + '&'
-        }
-
         ls_url = ls_url.substring(0, ls_url.length - 1)
 
         //主資料
@@ -290,23 +219,6 @@
             console.log(error)
           })
 
-        let ls_url2 = `${this.url2}?UseYN=Y`
-
-        //分類
-        await axios
-          .get(ls_url2)
-          .then((response) => (this.list_type = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-
-        /*
-        const imageList = []
-        data.forEach((item, index) => {
-          imageList.push(item.img)
-        })
-        this.imageList = imageList
-        */
         this.total = this.list.length
         this.timeOutID = setTimeout(() => {
           this.listLoading = false

@@ -7,7 +7,7 @@
       <el-form-item label="名稱" prop="name">
         <el-input v-model.trim="form.name" autocomplete="off" maxlength="100" />
       </el-form-item>
-      <el-form-item label="簡稱" prop="content">
+      <el-form-item label="敘述" prop="content">
         <el-input v-model.trim="form.content" autocomplete="off" maxlength="20" />
       </el-form-item>
       <el-form-item label="啟用" prop="use_yn">

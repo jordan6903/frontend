@@ -1,17 +1,14 @@
 <template>
   <el-dialog :title="title" :visible.sync="dialogFormVisible" width="500px" @close="close">
     <el-form ref="form" label-width="80px" :model="form" :rules="rules">
-      <el-form-item label="ID" prop="rating_type">
-        <el-input v-model.number="form.rating_type" autocomplete="off" :disabled="form_lock" maxlength="3" type="number" />
+      <el-form-item label="代碼" prop="relation_id">
+        <el-input v-model.number="form.relation_id" autocomplete="off" :disabled="form_lock" maxlength="3" type="number" />
       </el-form-item>
       <el-form-item label="名稱" prop="name">
-        <el-input v-model.trim="form.name" autocomplete="off" maxlength="100" />
-      </el-form-item>
-      <el-form-item label="簡稱" prop="shortName">
-        <el-input v-model.trim="form.shortName" autocomplete="off" maxlength="100" />
+        <el-input v-model.trim="form.name" autocomplete="off" maxlength="50" />
       </el-form-item>
       <el-form-item label="敘述" prop="content">
-        <el-input v-model.trim="form.content" autocomplete="off" maxlength="20" />
+        <el-input v-model.trim="form.content" autocomplete="off" maxlength="100" />
       </el-form-item>
       <el-form-item label="啟用" prop="use_yn">
         <el-switch v-model="form.use_yn" />
@@ -39,18 +36,17 @@
         return_msg: '',
         return_success: '',
         form: {
-          rating_type: '',
+          relation_id: '',
           name: '',
-          shortName: '',
           content: '',
           use_yn: true,
           sort: 0,
         },
+        form_type: [],
         form_lock: false,
         rules: {
-          rating_type: [{ required: true, trigger: 'blur', message: '請輸入代號' }],
+          relation_id: [{ required: true, trigger: 'blur', message: '請輸入代號' }],
           name: [{ required: true, trigger: 'blur', message: '請輸入名稱' }],
-          shortName: [{ required: true, trigger: 'blur', message: '請輸入簡稱' }],
         },
         title: '',
         dialogFormVisible: false,
@@ -79,7 +75,7 @@
         this.$emit('fetch-data')
       },
       toUpperCase(event) {
-        this.form.rating_type = event.toUpperCase()
+        this.form.relation_id = event.toUpperCase()
       },
       save() {
         console.log('===save')
@@ -88,7 +84,7 @@
             if (!this.form_lock) {
               console.log('新增')
               this.title = '新增'
-              this.url = 'http://localhost:5252/api/rating_type'
+              this.url = 'http://localhost:5252/api/product_relation_info'
               this.params = this.form
 
               console.log(this.form)
@@ -104,7 +100,7 @@
             } else {
               console.log('編輯')
               this.title = '編輯'
-              this.url = `http://localhost:5252/api/rating_type/${this.form.rating_type}`
+              this.url = `http://localhost:5252/api/product_relation_info/${this.form.relation_id}`
               this.params = this.form
 
               console.log(this.form)
