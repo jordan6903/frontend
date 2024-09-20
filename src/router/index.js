@@ -174,6 +174,16 @@ export const asyncRoutes = [
           permissions: ['admin'],
         },
       },
+      {
+        path: 'company',
+        name: 'Company',
+        component: () => import('@/views/companyProfile/company/index'),
+        meta: {
+          title: '公司 Company',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
     ],
   },
   {
@@ -220,6 +230,56 @@ export const asyncRoutes = [
         component: () => import('@/views/productProfile/productTypeInfo/index'),
         meta: {
           title: '屬性標籤設計檔 Product_type_info',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'product',
+        name: 'Product',
+        component: () => import('@/views/productProfile/product/index'),
+        meta: {
+          title: '遊戲 Product',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'productReleaseDay',
+        name: 'ProductReleaseDay',
+        component: () => import('@/views/productProfile/productReleaseDay/index'),
+        meta: {
+          title: '遊戲發售日 Product_Release_day',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'productType',
+        name: 'ProductType',
+        component: () => import('@/views/productProfile/productType/index'),
+        meta: {
+          title: '作品屬性/標籤 Product_type',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'productRelation',
+        name: 'ProductRelation',
+        component: () => import('@/views/productProfile/productRelation/index'),
+        meta: {
+          title: '遊戲間關聯 Product_relation',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'productScore',
+        name: 'ProductScore',
+        component: () => import('@/views/productProfile/productScore/index'),
+        meta: {
+          title: '遊戲評分 Product_score',
           icon: 'chalkboard',
           permissions: ['admin'],
         },
