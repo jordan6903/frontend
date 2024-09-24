@@ -2,71 +2,71 @@
   <el-dialog :title="title" :visible.sync="dialogFormVisible" width="500px" @close="close">
     <el-form ref="form" label-width="80px" :model="form" :rules="rules">
       <template v-if="!form_lock">
-        <el-form-item label="遊戲1">
+        <el-form-item label="公司1">
           <el-col :span="16">
             <el-input v-model.trim="searchword" autocomplete="off" />
           </el-col>
           &nbsp;
-          <el-button icon="el-icon-search" type="primary" @click="productQuery">查詢</el-button>
+          <el-button icon="el-icon-search" type="primary" @click="companyQuery">查詢</el-button>
         </el-form-item>
-        <el-form-item label="遊戲代碼" prop="p_id">
-          <el-select v-model="form.p_id" placeholder="請選擇遊戲">
-            <el-option v-for="type in search_product" :key="type.p_id" :label="type.p_id + ' - ' + type.name" :value="type.p_id" />
+        <el-form-item label="公司代碼" prop="c_id">
+          <el-select v-model="form.c_id" placeholder="請選擇遊戲">
+            <el-option v-for="type in search_company" :key="type.c_id" :label="type.c_id + ' - ' + type.name" :value="type.c_id" />
           </el-select>
           &nbsp;
-          <el-tag v-if="search_product && search_product.length === 0" type="info">未匯入遊戲</el-tag>
-          <el-tag v-else>已匯入遊戲</el-tag>
+          <el-tag v-if="search_company && search_company.length === 0" type="info">未匯入遊戲</el-tag>
+          <el-tag v-else>已匯入公司</el-tag>
         </el-form-item>
       </template>
 
       <template v-else>
-        <el-form-item label="遊戲1" prop="p_id">
-          <el-input v-model.trim="form.p_id" autocomplete="off" :disabled="form_lock" maxlength="10" />
+        <el-form-item label="公司1" prop="c_id">
+          <el-input v-model.trim="form.c_id" autocomplete="off" :disabled="form_lock" maxlength="10" />
         </el-form-item>
 
-        <el-form-item label="遊戲名稱">
-          <el-input v-model.trim="form.p_Name" autocomplete="off" :disabled="form_lock" />
+        <el-form-item label="公司名稱">
+          <el-input v-model.trim="form.c_Name" autocomplete="off" :disabled="form_lock" />
         </el-form-item>
       </template>
 
       <template v-if="!form_lock">
-        <el-form-item label="遊戲2">
+        <el-form-item label="公司2">
           <el-col :span="16">
             <el-input v-model.trim="searchword2" autocomplete="off" />
           </el-col>
           &nbsp;
-          <el-button icon="el-icon-search" type="primary" @click="productQuery2">查詢</el-button>
+          <el-button icon="el-icon-search" type="primary" @click="companyQuery2">查詢</el-button>
         </el-form-item>
-        <el-form-item label="遊戲代碼" prop="p_id">
-          <el-select v-model="form.p_id_to" placeholder="請選擇遊戲">
-            <el-option v-for="type in search_product2" :key="type.p_id" :label="type.p_id + ' - ' + type.name" :value="type.p_id" />
+        <el-form-item label="公司代碼" prop="c_id">
+          <el-select v-model="form.c_id_to" placeholder="請選擇遊戲">
+            <el-option v-for="type in search_company2" :key="type.c_id" :label="type.c_id + ' - ' + type.name" :value="type.c_id" />
           </el-select>
           &nbsp;
-          <el-tag v-if="search_product2 && search_product2.length === 0" type="info">未匯入遊戲</el-tag>
-          <el-tag v-else>已匯入遊戲</el-tag>
+          <el-tag v-if="search_company2 && search_company2.length === 0" type="info">未匯入遊戲</el-tag>
+          <el-tag v-else>已匯入公司</el-tag>
         </el-form-item>
       </template>
 
       <template v-else>
-        <el-form-item label="遊戲2" prop="p_id_to">
-          <el-input v-model.trim="form.p_id_to" autocomplete="off" :disabled="form_lock" maxlength="10" />
+        <el-form-item label="遊戲2" prop="c_id_to">
+          <el-input v-model.trim="form.c_id_to" autocomplete="off" :disabled="form_lock" maxlength="10" />
         </el-form-item>
 
         <el-form-item label="遊戲名稱">
-          <el-input v-model.trim="form.p_Name_to" autocomplete="off" :disabled="form_lock" />
+          <el-input v-model.trim="form.c_Name_to" autocomplete="off" :disabled="form_lock" />
         </el-form-item>
       </template>
 
       <!--
-      <el-form-item label="遊戲代碼1" prop="p_id">
-        <el-input v-model.trim="form.p_id" autocomplete="off" maxlength="10" :disabled="form_lock" />
+      <el-form-item label="遊戲代碼1" prop="c_id">
+        <el-input v-model.trim="form.c_id" autocomplete="off" maxlength="10" :disabled="form_lock" />
       </el-form-item>
-      <el-form-item label="遊戲代碼2" prop="p_id_to">
-        <el-input v-model.trim="form.p_id_to" autocomplete="off" maxlength="10" :disabled="form_lock" />
+      <el-form-item label="遊戲代碼2" prop="c_id_to">
+        <el-input v-model.trim="form.c_id_to" autocomplete="off" maxlength="10" :disabled="form_lock" />
       </el-form-item>
       -->
       <el-form-item label="屬性/標籤分類" prop="relation_id">
-        <el-select v-model="form.relation_id" placeholder="請選擇分類">
+        <el-select v-model="form.relation_id" :disabled="form_lock" placeholder="請選擇分類">
           <el-option
             v-for="type in form_type"
             :key="type.relation_id"
@@ -98,20 +98,20 @@
         return_msg: '',
         return_success: '',
         searchword: '',
-        search_product: [],
+        search_company: [],
         searchword2: '',
-        search_product2: [],
+        search_company2: [],
         form: {
-          p_id: '',
-          p_id_to: '',
+          c_id: '',
+          c_id_to: '',
           relation_id: '',
           content: '',
         },
         form_type: [],
         form_lock: false,
         rules: {
-          p_id: [{ required: true, trigger: 'blur', message: '請輸入遊戲代號1' }],
-          p_id_to: [{ required: true, trigger: 'blur', message: '請輸入遊戲代號2' }],
+          c_id: [{ required: true, trigger: 'blur', message: '請輸入公司代號1' }],
+          c_id_to: [{ required: true, trigger: 'blur', message: '請輸入公司代號2' }],
           relation_id: [{ required: true, trigger: 'blur', message: '請輸入分類' }],
         },
         title: '',
@@ -146,22 +146,22 @@
       toUpperCase(event) {
         this.form.id = event.toUpperCase()
       },
-      async productQuery() {
-        let ls_url = 'http://localhost:5252/api/product'
+      async companyQuery() {
+        let ls_url = 'http://localhost:5252/api/company'
         ls_url += `?searchword=${this.searchword}`
         await axios
           .get(ls_url)
-          .then((response) => (this.search_product = response.data))
+          .then((response) => (this.search_company = response.data))
           .catch(function (error) {
             console.log(error)
           })
       },
-      async productQuery2() {
-        let ls_url = 'http://localhost:5252/api/product'
+      async companyQuery2() {
+        let ls_url = 'http://localhost:5252/api/company'
         ls_url += `?searchword=${this.searchword2}`
         await axios
           .get(ls_url)
-          .then((response) => (this.search_product2 = response.data))
+          .then((response) => (this.search_company2 = response.data))
           .catch(function (error) {
             console.log(error)
           })
@@ -173,7 +173,7 @@
             if (!this.form_lock) {
               console.log('新增')
               this.title = '新增'
-              this.url = 'http://localhost:5252/api/product_relation'
+              this.url = 'http://localhost:5252/api/company_relation'
               this.params = this.form
 
               console.log(this.form)
@@ -189,7 +189,7 @@
             } else {
               console.log('編輯')
               this.title = '編輯'
-              this.url = `http://localhost:5252/api/product_relation/${this.form.id}`
+              this.url = `http://localhost:5252/api/company_relation/${this.form.id}`
               this.params = this.form
 
               console.log(this.form)

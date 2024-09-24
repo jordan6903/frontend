@@ -184,6 +184,16 @@ export const asyncRoutes = [
           permissions: ['admin'],
         },
       },
+      {
+        path: 'companyRelation',
+        name: 'CompanyRelation',
+        component: () => import('@/views/companyProfile/companyRelation/index'),
+        meta: {
+          title: '公司間關聯 Company_relation',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
     ],
   },
   {
@@ -300,6 +310,56 @@ export const asyncRoutes = [
         component: () => import('@/views/websiteProfile/websiteType/index'),
         meta: {
           title: '網址種類設定檔 Website_Type',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/translationProfile',
+    component: Layout,
+    redirect: 'noRedirect',
+    name: 'TranslationProfile',
+    alwaysShow: true,
+    meta: { title: '漢化', icon: 'box-open' },
+    children: [
+      {
+        path: 'translationTeamType',
+        name: 'TranslationTeamType',
+        component: () => import('@/views/translationProfile/translationTeamType/index'),
+        meta: {
+          title: '漢化類型設定檔 Translation_team_type',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'translationTeamInfo',
+        name: 'TranslationTeamInfo',
+        component: () => import('@/views/translationProfile/translationTeamInfo/index'),
+        meta: {
+          title: '漢化組資料 Translation_team_info',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'translationTeam',
+        name: 'TranslationTeam',
+        component: () => import('@/views/translationProfile/translationTeam/index'),
+        meta: {
+          title: '漢化組 Translation_team',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'translationTeamBatch',
+        name: 'TranslationTeamBatch',
+        component: () => import('@/views/translationProfile/translationTeamBatch/index'),
+        meta: {
+          title: '漢化組批次 Translation_team_batch',
           icon: 'chalkboard',
           permissions: ['admin'],
         },

@@ -10,18 +10,14 @@
             <el-button icon="el-icon-search" native-type="submit" type="primary" @click="handleQuery">查詢</el-button>
           </el-form-item>
           &nbsp;&nbsp;&nbsp;&nbsp;
-          <el-form-item label="啟用">
-            <el-switch v-model="queryForm.use_yn_set" />
-          </el-form-item>
-          &nbsp;&nbsp;&nbsp;&nbsp;
           <el-form-item label="分類">
             <el-select v-model="queryForm.type" placeholder="請選擇分類">
               <el-option label="% 全選" value="%" />
               <el-option
-                v-for="type in list_type"
-                :key="type.p_type_class"
-                :label="type.p_type_class + ' ' + type.name"
-                :value="type.p_type_class"
+                v-for="type in list_type.type"
+                :key="type.relation_id"
+                :label="type.relation_id + ' ' + type.name"
+                :value="type.relation_id"
               />
             </el-select>
           </el-form-item>
@@ -46,20 +42,11 @@
       @sort-change="tableSortChange"
     >
       <el-table-column show-overflow-tooltip type="selection" width="55" />
-      <el-table-column label="代碼" prop="p_type_id" show-overflow-tooltip sortable width="95" />
-      <el-table-column label="分類" prop="p_type_name" show-overflow-tooltip sortable width="150" />
-      <el-table-column label="名稱" prop="fullName" show-overflow-tooltip />
-      <el-table-column label="簡稱" prop="shortName" show-overflow-tooltip />
-      <el-table-column label="日文" prop="fullName_JP" show-overflow-tooltip />
-      <el-table-column label="英文" prop="fullName_EN" show-overflow-tooltip />
+      <el-table-column label="代碼" prop="id" show-overflow-tooltip sortable width="95" />
+      <el-table-column label="遊戲1" prop="p_Name" show-overflow-tooltip sortable width="250" />
+      <el-table-column label="遊戲2" prop="p_Name_to" show-overflow-tooltip sortable width="250" />
+      <el-table-column label="關聯" prop="relation_Name" show-overflow-tooltip />
       <el-table-column label="敘述" prop="content" show-overflow-tooltip />
-      <el-table-column label="啟用" prop="use_yn" show-overflow-tooltip>
-        <template #default="{ row }">
-          <vab-icon v-show="row.use_yn" :icon="['fas', 'check']" />
-          <vab-icon v-show="!row.use_yn" :icon="['fas', 'times']" />
-        </template>
-      </el-table-column>
-      <el-table-column label="排序" prop="sort" show-overflow-tooltip sortable />
       <el-table-column label="更新時間" prop="upd_date" show-overflow-tooltip sortable width="200" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
@@ -77,7 +64,7 @@
       @current-change="handleCurrentChange"
       @size-change="handleSizeChange"
     />
-    <table-edit ref="edit" />
+    <table-edit ref="edit" @trigger-handleQuery="handleQuery" />
   </div>
 </template>
 
@@ -86,7 +73,7 @@
   import TableEdit from './components/TableEdit'
 
   export default {
-    name: 'ProductTypeInfo',
+    name: 'ProductRelation',
     components: {
       TableEdit,
     },
@@ -102,13 +89,17 @@
     },
     data() {
       return {
-        url: 'http://localhost:5252/api/product_type_info',
-        url2: 'http://localhost:5252/api/product_type_class',
+        url: 'http://localhost:5252/api/product_relation',
+        url_type: {
+          url1: 'http://localhost:5252/api/product_relation_info',
+        },
         return_msg: '',
         return_success: '',
         imgShow: true,
         list: [],
-        list_type: [],
+        list_type: {
+          type: [],
+        },
         imageList: [],
         listLoading: true,
         layout: 'total, sizes, prev, pager, next, jumper',
@@ -120,7 +111,6 @@
           pageNo: 1,
           pageSize: 20,
           searchword: '',
-          use_yn_set: true,
           type: '',
         },
         timeOutID: null,
@@ -160,11 +150,11 @@
       },
       handleDelete(row) {
         console.log('===methods handleDelete')
-        console.log(row.p_type_id)
-        if (row.p_type_id) {
+        console.log(row.id)
+        if (row.id) {
           this.$baseConfirm('你確定要刪除當前項嗎?', null, async () => {
             let ls_url = this.url
-            ls_url += `/${row.p_type_id}`
+            ls_url += `/${row.id}`
 
             await axios
               .delete(ls_url, {})
@@ -217,12 +207,6 @@
 
         let ls_url = `${this.url}?`
 
-        if (this.queryForm.use_yn_set) {
-          ls_url += 'UseYN=Y&'
-        } else {
-          ls_url += 'UseYN=N&'
-        }
-
         if (this.queryForm.searchword != '') {
           ls_url += `searchword=${this.queryForm.searchword}` + '&'
         }
@@ -234,7 +218,7 @@
           this.queryForm.type !== '%'
         ) {
           console.log(this.queryForm.type)
-          ls_url += `&p_type=${this.queryForm.type}` + '&'
+          ls_url += `&relation_id=${this.queryForm.type}` + '&'
         }
 
         ls_url = ls_url.substring(0, ls_url.length - 1)
@@ -247,12 +231,12 @@
             console.log(error)
           })
 
-        let ls_url2 = `${this.url2}?UseYN=Y`
+        let ls_url1 = `${this.url_type.url1}`
 
-        //分類
+        //分類type
         await axios
-          .get(ls_url2)
-          .then((response) => (this.list_type = response.data))
+          .get(ls_url1)
+          .then((response) => (this.list_type.type = response.data))
           .catch(function (error) {
             console.log(error)
           })

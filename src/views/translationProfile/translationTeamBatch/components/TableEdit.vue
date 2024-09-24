@@ -29,14 +29,17 @@
         </el-form-item>
       </template>
 
-      <el-form-item label="分類" prop="type_id">
-        <el-select v-model="form.type_id" :disabled="form_lock" placeholder="請選擇分類">
-          <el-option v-for="type in form_type" :key="type.type_id" :label="type.type_id + ' ' + type.name" :value="type.type_id" />
-        </el-select>
+      <el-form-item label="TT_id" prop="tT_id">
+        <el-input v-model.number="form.tT_id" autocomplete="off" type="number" />
+      </el-form-item>
+      <el-form-item label="TT_id" prop="t_batch">
+        <el-input v-model.number="form.t_batch" autocomplete="off" type="number" />
       </el-form-item>
 
-      <el-form-item label="分數" prop="score">
-        <el-input v-model.number="form.score" autocomplete="off" maxlength="3" type="number" />
+      <el-form-item label="漢化組" prop="t_id">
+        <el-select v-model="form.t_id" :disabled="form_lock" placeholder="請選擇分類">
+          <el-option v-for="type in form_info" :key="type.t_id" :label="type.t_id + ' ' + type.name" :value="type.t_id" />
+        </el-select>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -61,15 +64,18 @@
         search_product: [],
         form: {
           p_id: '',
-          type_id: '',
-          score: 0,
+          tT_id: 0,
+          t_batch: 0,
+          t_id: '',
         },
         form_type: [],
+        form_info: [],
         form_lock: false,
         rules: {
-          p_id: [{ required: true, trigger: 'blur', message: '請輸入代號' }],
-          type_id: [{ required: true, trigger: 'blur', message: '請選擇分類' }],
-          score: [{ required: true, trigger: 'blur', message: '請輸入名稱' }],
+          p_id: [{ required: true, trigger: 'blur', message: '請輸入遊戲' }],
+          tT_id: [{ required: true, trigger: 'blur', message: '請輸入TT_id' }],
+          t_batch: [{ required: true, trigger: 'blur', message: '請輸入T_batch' }],
+          t_id: [{ required: true, trigger: 'blur', message: '請選擇漢化組' }],
         },
         title: '',
         dialogFormVisible: false,
@@ -92,6 +98,7 @@
         this.dialogFormVisible = true
 
         this.form_type = list_type.type
+        this.form_info = list_type.info
       },
       close() {
         console.log('===close')
@@ -120,7 +127,7 @@
             if (!this.form_lock) {
               console.log('新增')
               this.title = '新增'
-              this.url = 'http://localhost:5252/api/product_score'
+              this.url = 'http://localhost:5252/api/translation_team_batch'
               this.params = this.form
 
               console.log(this.form)
@@ -136,7 +143,7 @@
             } else {
               console.log('編輯')
               this.title = '編輯'
-              this.url = `http://localhost:5252/api/product_score/${this.form.id}`
+              this.url = `http://localhost:5252/api/translation_team_batch/${this.form.id}`
               this.params = this.form
 
               console.log(this.form)

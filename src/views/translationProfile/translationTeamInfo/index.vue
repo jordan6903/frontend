@@ -9,13 +9,6 @@
           <el-form-item>
             <el-button icon="el-icon-search" native-type="submit" type="primary" @click="handleQuery">查詢</el-button>
           </el-form-item>
-          &nbsp;&nbsp;&nbsp;&nbsp;
-          <el-form-item label="分類">
-            <el-select v-model="queryForm.type" placeholder="請選擇分類">
-              <el-option label="% 全選" value="%" />
-              <el-option v-for="type in list_type.type" :key="type.type_id" :label="type.type_id + ' ' + type.name" :value="type.type_id" />
-            </el-select>
-          </el-form-item>
         </el-form>
       </vab-query-form-left-panel>
     </vab-query-form>
@@ -31,16 +24,16 @@
       ref="tableSort"
       v-loading="listLoading"
       :data="list"
+      :default-sort="{ prop: 'sort' }"
       :element-loading-text="elementLoadingText"
       :height="height"
       @selection-change="setSelectRows"
       @sort-change="tableSortChange"
     >
       <el-table-column show-overflow-tooltip type="selection" width="55" />
-      <el-table-column label="代碼" prop="id" show-overflow-tooltip sortable width="95" />
-      <el-table-column label="遊戲名稱" prop="p_Name" show-overflow-tooltip sortable width="250" />
-      <el-table-column label="分類" prop="type_Name" show-overflow-tooltip />
-      <el-table-column label="分數" prop="score" show-overflow-tooltip />
+      <el-table-column label="代碼" prop="t_id" show-overflow-tooltip sortable width="95" />
+      <el-table-column label="名稱" prop="name" show-overflow-tooltip />
+      <el-table-column label="敘述" prop="content" show-overflow-tooltip />
       <el-table-column label="更新時間" prop="upd_date" show-overflow-tooltip sortable width="200" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
@@ -67,7 +60,7 @@
   import TableEdit from './components/TableEdit'
 
   export default {
-    name: 'ProductScore',
+    name: 'TranslationTeamInfo',
     components: {
       TableEdit,
     },
@@ -83,17 +76,11 @@
     },
     data() {
       return {
-        url: 'http://localhost:5252/api/product_score',
-        url_type: {
-          url1: 'http://localhost:5252/api/product_score_type',
-        },
+        url: 'http://localhost:5252/api/translation_team_info',
         return_msg: '',
         return_success: '',
         imgShow: true,
         list: [],
-        list_type: {
-          type: [],
-        },
         imageList: [],
         listLoading: true,
         layout: 'total, sizes, prev, pager, next, jumper',
@@ -105,7 +92,6 @@
           pageNo: 1,
           pageSize: 20,
           searchword: '',
-          type: '',
         },
         timeOutID: null,
       }
@@ -136,19 +122,19 @@
       },
       handleAdd() {
         console.log('===methods handleAdd')
-        this.$refs['edit'].showEdit(null, this.list_type)
+        this.$refs['edit'].showEdit()
       },
       handleEdit(row) {
         console.log('===methods handleEdit')
-        this.$refs['edit'].showEdit(row, this.list_type)
+        this.$refs['edit'].showEdit(row)
       },
       handleDelete(row) {
         console.log('===methods handleDelete')
-        console.log(row.id)
-        if (row.id) {
+        console.log(row.t_id)
+        if (row.t_id) {
           this.$baseConfirm('你確定要刪除當前項嗎?', null, async () => {
             let ls_url = this.url
-            ls_url += `/${row.id}`
+            ls_url += `/${row.t_id}`
 
             await axios
               .delete(ls_url, {})
@@ -199,38 +185,15 @@
         console.log('===methods fetchData')
         this.listLoading = true
 
-        let ls_url = `${this.url}?`
+        let ls_url = this.url
 
         if (this.queryForm.searchword != '') {
-          ls_url += `searchword=${this.queryForm.searchword}` + '&'
+          ls_url += `?searchword=${this.queryForm.searchword}`
         }
 
-        if (
-          this.queryForm.type !== '' &&
-          this.queryForm.type !== null &&
-          this.queryForm.type !== undefined &&
-          this.queryForm.type !== '%'
-        ) {
-          console.log(this.queryForm.type)
-          ls_url += `&type_id=${this.queryForm.type}` + '&'
-        }
-
-        ls_url = ls_url.substring(0, ls_url.length - 1)
-
-        //主資料
         await axios
           .get(ls_url)
           .then((response) => (this.list = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-
-        let ls_url1 = `${this.url_type.url1}?UseYN=Y`
-
-        //分類type
-        await axios
-          .get(ls_url1)
-          .then((response) => (this.list_type.type = response.data))
           .catch(function (error) {
             console.log(error)
           })

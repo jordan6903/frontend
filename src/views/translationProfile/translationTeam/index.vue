@@ -4,7 +4,13 @@
       <vab-query-form-left-panel>
         <el-form ref="form" :inline="true" :model="queryForm" @submit.native.prevent>
           <el-form-item>
-            <el-input v-model="queryForm.searchword" placeholder="輸入關鍵字..." />
+            <el-input v-model="queryForm.csearchword" placeholder="請輸入公司名稱..." />
+          </el-form-item>
+          <el-form-item>
+            <el-input v-model="queryForm.psearchword" placeholder="請輸入遊戲名稱..." />
+          </el-form-item>
+          <el-form-item>
+            <el-input v-model="queryForm.tsearchword" placeholder="請輸入漢化組..." />
           </el-form-item>
           <el-form-item>
             <el-button icon="el-icon-search" native-type="submit" type="primary" @click="handleQuery">查詢</el-button>
@@ -23,32 +29,47 @@
     <vab-query-form>
       <vab-query-form-left-panel>
         <el-button icon="el-icon-plus" type="primary" @click="handleAdd">新增</el-button>
-        <el-button icon="el-icon-delete" type="danger" @click="handleDelete">删除</el-button>
       </vab-query-form-left-panel>
     </vab-query-form>
 
-    <el-table
-      ref="tableSort"
-      v-loading="listLoading"
-      :data="list"
-      :element-loading-text="elementLoadingText"
-      :height="height"
-      @selection-change="setSelectRows"
-      @sort-change="tableSortChange"
-    >
-      <el-table-column show-overflow-tooltip type="selection" width="55" />
-      <el-table-column label="代碼" prop="id" show-overflow-tooltip sortable width="95" />
-      <el-table-column label="遊戲名稱" prop="p_Name" show-overflow-tooltip sortable width="250" />
-      <el-table-column label="分類" prop="type_Name" show-overflow-tooltip />
-      <el-table-column label="分數" prop="score" show-overflow-tooltip />
-      <el-table-column label="更新時間" prop="upd_date" show-overflow-tooltip sortable width="200" />
-      <el-table-column label="操作" show-overflow-tooltip width="180px">
-        <template #default="{ row }">
-          <el-button type="text" @click="handleEdit(row)">編輯</el-button>
-          <el-button type="text" @click="handleDelete(row)">刪除</el-button>
+    <el-table :data="list" :height="height" :stripe="true" style="width: 100%">
+      <el-table-column style="background: whitesmoke" type="expand">
+        <template #default="props">
+          <h2 style="margin-left: 50px; display: inline">漢化組列</h2>
+          <el-button
+            icon="el-icon-plus"
+            style="margin-left: 10px; margin-bottom: 10px; display: inline"
+            type="primary"
+            @click="handleAdd2(props.row)"
+          >
+            新增
+          </el-button>
+          <el-table :border="true" :data="props.row.t_batch_data" style="margin-left: 50px; margin-bottom: 20px">
+            <el-table-column label="批次" prop="t_batch" show-overflow-tooltip width="95" />
+            <el-table-column label="漢化組">
+              <template #default="scope">
+                <div v-for="(item, index) in scope.row.tT_info" :key="index">
+                  {{ item.t_Name }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="漢化進度" prop="type_Name" width="150" />
+            <el-table-column label="備註" prop="remark" width="300" />
+            <el-table-column label="TT_id" prop="id" show-overflow-tooltip width="95" />
+            <el-table-column label="操作" show-overflow-tooltip width="180px">
+              <template #default="{ row }">
+                <el-button type="text" @click="handleEdit(row)">編輯</el-button>
+                <el-button type="text" @click="handleDelete(row)">刪除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </template>
       </el-table-column>
+      <el-table-column label="公司" prop="c_Name" show-overflow-tooltip sortable width="150" />
+      <el-table-column label="遊戲名稱" prop="p_Name" show-overflow-tooltip />
+      <el-table-column label="中文名稱" prop="p_CName" show-overflow-tooltip />
     </el-table>
+
     <el-pagination
       :background="background"
       :current-page="queryForm.pageNo"
@@ -67,7 +88,7 @@
   import TableEdit from './components/TableEdit'
 
   export default {
-    name: 'ProductScore',
+    name: 'TranslationTeam',
     components: {
       TableEdit,
     },
@@ -83,15 +104,18 @@
     },
     data() {
       return {
-        url: 'http://localhost:5252/api/product_score',
+        url: 'http://localhost:5252/api/translation_team',
+        url2: 'http://localhost:5252/api/translation_team_batch',
         url_type: {
-          url1: 'http://localhost:5252/api/product_score_type',
+          url1: 'http://localhost:5252/api/translation_team_info',
+          url2: 'http://localhost:5252/api/translation_team_type',
         },
         return_msg: '',
         return_success: '',
         imgShow: true,
         list: [],
         list_type: {
+          info: [],
           type: [],
         },
         imageList: [],
@@ -104,7 +128,9 @@
         queryForm: {
           pageNo: 1,
           pageSize: 20,
-          searchword: '',
+          csearchword: '',
+          psearchword: '',
+          tsearchword: '',
           type: '',
         },
         timeOutID: null,
@@ -138,15 +164,41 @@
         console.log('===methods handleAdd')
         this.$refs['edit'].showEdit(null, this.list_type)
       },
+      handleAdd2(row) {
+        console.log('===methods handleAdd2')
+        console.log(row)
+        this.$refs['edit'].showAdd(row, this.list_type)
+      },
       handleEdit(row) {
         console.log('===methods handleEdit')
+        console.log(row)
         this.$refs['edit'].showEdit(row, this.list_type)
       },
       handleDelete(row) {
         console.log('===methods handleDelete')
-        console.log(row.id)
+        console.log(row)
         if (row.id) {
           this.$baseConfirm('你確定要刪除當前項嗎?', null, async () => {
+            //先刪batch
+            let ls_url2 = this.url2
+            ls_url2 += `/deletebyttid/${row.id}`
+
+            await axios
+              .delete(ls_url2, {})
+              .then((response) => (this.return_msg = response.data.message))
+              .catch(function (error) {
+                // 请求失败处理
+                console.log(error)
+              })
+
+            //拆解
+            let msg_array = this.return_msg.split('#')
+            this.return_success = msg_array[0]
+            this.return_msg = msg_array[1]
+
+            this.$baseMessage(this.return_msg, 'success')
+
+            //再刪主檔
             let ls_url = this.url
             ls_url += `/${row.id}`
 
@@ -159,7 +211,7 @@
               })
 
             //拆解
-            let msg_array = this.return_msg.split('#')
+            msg_array = this.return_msg.split('#')
             this.return_success = msg_array[0]
             this.return_msg = msg_array[1]
 
@@ -201,8 +253,16 @@
 
         let ls_url = `${this.url}?`
 
-        if (this.queryForm.searchword != '') {
-          ls_url += `searchword=${this.queryForm.searchword}` + '&'
+        if (this.queryForm.csearchword != '') {
+          ls_url += `c_search=${this.queryForm.csearchword}` + '&'
+        }
+
+        if (this.queryForm.psearchword != '') {
+          ls_url += `p_search=${this.queryForm.psearchword}` + '&'
+        }
+
+        if (this.queryForm.tsearchword != '') {
+          ls_url += `t_search=${this.queryForm.tsearchword}` + '&'
         }
 
         if (
@@ -225,11 +285,20 @@
             console.log(error)
           })
 
-        let ls_url1 = `${this.url_type.url1}?UseYN=Y`
+        let ls_url1 = `${this.url_type.url1}`
+        let ls_url2 = `${this.url_type.url2}?UseYN=Y`
+
+        //漢化組info
+        await axios
+          .get(ls_url1)
+          .then((response) => (this.list_type.info = response.data))
+          .catch(function (error) {
+            console.log(error)
+          })
 
         //分類type
         await axios
-          .get(ls_url1)
+          .get(ls_url2)
           .then((response) => (this.list_type.type = response.data))
           .catch(function (error) {
             console.log(error)

@@ -13,7 +13,12 @@
           <el-form-item label="分類">
             <el-select v-model="queryForm.type" placeholder="請選擇分類">
               <el-option label="% 全選" value="%" />
-              <el-option v-for="type in list_type.type" :key="type.type_id" :label="type.type_id + ' ' + type.name" :value="type.type_id" />
+              <el-option
+                v-for="type in list_type.type"
+                :key="type.relation_id"
+                :label="type.relation_id + ' ' + type.name"
+                :value="type.relation_id"
+              />
             </el-select>
           </el-form-item>
         </el-form>
@@ -38,9 +43,10 @@
     >
       <el-table-column show-overflow-tooltip type="selection" width="55" />
       <el-table-column label="代碼" prop="id" show-overflow-tooltip sortable width="95" />
-      <el-table-column label="遊戲名稱" prop="p_Name" show-overflow-tooltip sortable width="250" />
-      <el-table-column label="分類" prop="type_Name" show-overflow-tooltip />
-      <el-table-column label="分數" prop="score" show-overflow-tooltip />
+      <el-table-column label="公司1" prop="c_Name" show-overflow-tooltip sortable width="250" />
+      <el-table-column label="公司2" prop="c_Name_to" show-overflow-tooltip sortable width="250" />
+      <el-table-column label="關聯" prop="relation_Name" show-overflow-tooltip />
+      <el-table-column label="敘述" prop="content" show-overflow-tooltip />
       <el-table-column label="更新時間" prop="upd_date" show-overflow-tooltip sortable width="200" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
@@ -67,7 +73,7 @@
   import TableEdit from './components/TableEdit'
 
   export default {
-    name: 'ProductScore',
+    name: 'CompanyRelation',
     components: {
       TableEdit,
     },
@@ -83,9 +89,9 @@
     },
     data() {
       return {
-        url: 'http://localhost:5252/api/product_score',
+        url: 'http://localhost:5252/api/company_relation',
         url_type: {
-          url1: 'http://localhost:5252/api/product_score_type',
+          url1: 'http://localhost:5252/api/company_relation_info',
         },
         return_msg: '',
         return_success: '',
@@ -212,7 +218,7 @@
           this.queryForm.type !== '%'
         ) {
           console.log(this.queryForm.type)
-          ls_url += `&type_id=${this.queryForm.type}` + '&'
+          ls_url += `&relation_id=${this.queryForm.type}` + '&'
         }
 
         ls_url = ls_url.substring(0, ls_url.length - 1)
@@ -225,7 +231,7 @@
             console.log(error)
           })
 
-        let ls_url1 = `${this.url_type.url1}?UseYN=Y`
+        let ls_url1 = `${this.url_type.url1}`
 
         //分類type
         await axios

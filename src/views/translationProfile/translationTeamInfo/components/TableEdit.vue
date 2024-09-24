@@ -1,42 +1,14 @@
 <template>
   <el-dialog :title="title" :visible.sync="dialogFormVisible" width="500px" @close="close">
     <el-form ref="form" label-width="80px" :model="form" :rules="rules">
-      <template v-if="!form_lock">
-        <el-form-item label="遊戲搜尋">
-          <el-col :span="16">
-            <el-input v-model.trim="searchword" autocomplete="off" />
-          </el-col>
-          &nbsp;
-          <el-button icon="el-icon-search" type="primary" @click="productQuery">查詢</el-button>
-        </el-form-item>
-        <el-form-item label="遊戲代碼" prop="p_id">
-          <el-select v-model="form.p_id" placeholder="請選擇遊戲">
-            <el-option v-for="type in search_product" :key="type.p_id" :label="type.p_id + ' - ' + type.name" :value="type.p_id" />
-          </el-select>
-          &nbsp;
-          <el-tag v-if="search_product && search_product.length === 0" type="info">未匯入遊戲</el-tag>
-          <el-tag v-else>已匯入遊戲</el-tag>
-        </el-form-item>
-      </template>
-
-      <template v-else>
-        <el-form-item label="遊戲代碼" prop="p_id">
-          <el-input v-model.trim="form.p_id" autocomplete="off" :disabled="form_lock" maxlength="10" />
-        </el-form-item>
-
-        <el-form-item label="遊戲名稱">
-          <el-input v-model.trim="form.p_Name" autocomplete="off" :disabled="form_lock" />
-        </el-form-item>
-      </template>
-
-      <el-form-item label="分類" prop="type_id">
-        <el-select v-model="form.type_id" :disabled="form_lock" placeholder="請選擇分類">
-          <el-option v-for="type in form_type" :key="type.type_id" :label="type.type_id + ' ' + type.name" :value="type.type_id" />
-        </el-select>
+      <el-form-item label="代號" prop="t_id">
+        <el-input v-model.trim="form.t_id" autocomplete="off" :disabled="form_lock" maxlength="6" @input="toUpperCase($event)" />
       </el-form-item>
-
-      <el-form-item label="分數" prop="score">
-        <el-input v-model.number="form.score" autocomplete="off" maxlength="3" type="number" />
+      <el-form-item label="名稱" prop="name">
+        <el-input v-model.trim="form.name" autocomplete="off" maxlength="100" />
+      </el-form-item>
+      <el-form-item label="敘述" prop="content">
+        <el-input v-model.trim="form.content" autocomplete="off" maxlength="20" />
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -55,21 +27,16 @@
       return {
         url: '',
         params: '',
-        return_msg: '',
-        return_success: '',
-        searchword: '',
-        search_product: [],
+        return_msg: [],
         form: {
-          p_id: '',
-          type_id: '',
-          score: 0,
+          t_id: '',
+          name: '',
+          content: '',
         },
-        form_type: [],
         form_lock: false,
         rules: {
-          p_id: [{ required: true, trigger: 'blur', message: '請輸入代號' }],
-          type_id: [{ required: true, trigger: 'blur', message: '請選擇分類' }],
-          score: [{ required: true, trigger: 'blur', message: '請輸入名稱' }],
+          t_id: [{ required: true, trigger: 'blur', message: '請輸入代號' }],
+          name: [{ required: true, trigger: 'blur', message: '請輸入名稱' }],
         },
         title: '',
         dialogFormVisible: false,
@@ -77,10 +44,9 @@
     },
     created() {},
     methods: {
-      showEdit(row, list_type) {
+      showEdit(row) {
         console.log('===showEdit')
         console.log(row)
-        console.log(list_type)
         if (!row) {
           this.title = '新增'
           this.form_lock = false
@@ -90,8 +56,6 @@
           this.form_lock = true
         }
         this.dialogFormVisible = true
-
-        this.form_type = list_type.type
       },
       close() {
         console.log('===close')
@@ -101,17 +65,7 @@
         this.$emit('fetch-data')
       },
       toUpperCase(event) {
-        this.form.id = event.toUpperCase()
-      },
-      async productQuery() {
-        let ls_url = 'http://localhost:5252/api/product'
-        ls_url += `?searchword=${this.searchword}`
-        await axios
-          .get(ls_url)
-          .then((response) => (this.search_product = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
+        this.form.t_id = event.toUpperCase()
       },
       save() {
         console.log('===save')
@@ -120,11 +74,8 @@
             if (!this.form_lock) {
               console.log('新增')
               this.title = '新增'
-              this.url = 'http://localhost:5252/api/product_score'
+              this.url = 'http://localhost:5252/api/translation_team_info'
               this.params = this.form
-
-              console.log(this.form)
-              console.log(this.params)
 
               await axios
                 .post(this.url, this.params)
@@ -136,11 +87,8 @@
             } else {
               console.log('編輯')
               this.title = '編輯'
-              this.url = `http://localhost:5252/api/product_score/${this.form.id}`
+              this.url = `http://localhost:5252/api/translation_team_info/${this.form.t_id}`
               this.params = this.form
-
-              console.log(this.form)
-              console.log(this.params)
 
               await axios
                 .put(this.url, this.params)
