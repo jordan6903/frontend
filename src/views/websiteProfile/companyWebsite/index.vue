@@ -4,13 +4,21 @@
       <vab-query-form-left-panel>
         <el-form ref="form" :inline="true" :model="queryForm" @submit.native.prevent>
           <el-form-item>
-            <el-input v-model="queryForm.searchword" placeholder="輸入遊戲名稱或id..." />
-          </el-form-item>
-          <el-form-item>
-            <el-input v-model="queryForm.searchword2" placeholder="輸入公司名稱或id..." />
+            <el-input v-model="queryForm.searchword" placeholder="輸入關鍵字..." />
           </el-form-item>
           <el-form-item>
             <el-button icon="el-icon-search" native-type="submit" type="primary" @click="handleQuery">查詢</el-button>
+          </el-form-item>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <el-form-item label="啟用">
+            <el-switch v-model="queryForm.use_yn_set" />
+          </el-form-item>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <el-form-item label="分類">
+            <el-select v-model="queryForm.type" placeholder="請選擇分類">
+              <el-option label="% 全選" value="%" />
+              <el-option v-for="type in list_type" :key="type.type_id" :label="type.type_id + ' ' + type.name" :value="type.type_id" />
+            </el-select>
           </el-form-item>
         </el-form>
       </vab-query-form-left-panel>
@@ -33,14 +41,20 @@
       @sort-change="tableSortChange"
     >
       <el-table-column show-overflow-tooltip type="selection" width="55" />
-      <el-table-column label="代碼" prop="p_id" show-overflow-tooltip sortable width="150" />
-      <el-table-column label="公司名稱" prop="company_name" show-overflow-tooltip sortable width="150" />
-      <el-table-column label="遊戲名稱" prop="name" show-overflow-tooltip width="150" />
-      <el-table-column label="中文名稱" prop="c_Name" show-overflow-tooltip />
-      <el-table-column label="介紹" prop="content" show-overflow-tooltip />
-      <el-table-column label="類型" prop="content_style" show-overflow-tooltip />
-      <el-table-column label="遊玩時數" prop="play_time" show-overflow-tooltip />
+      <el-table-column label="代碼" prop="id" show-overflow-tooltip sortable width="95" />
+      <el-table-column label="公司名稱" prop="c_Name" show-overflow-tooltip sortable width="200" />
+      <el-table-column label="分類" prop="type_Name" show-overflow-tooltip />
+      <el-table-column label="名稱" prop="name" show-overflow-tooltip />
+      <el-table-column label="網址" prop="url" show-overflow-tooltip />
       <el-table-column label="備註" prop="remark" show-overflow-tooltip />
+      <el-table-column label="啟用" prop="use_yn" show-overflow-tooltip>
+        <template #default="{ row }">
+          <vab-icon v-show="row.use_yn" :icon="['fas', 'check']" />
+          <vab-icon v-show="!row.use_yn" :icon="['fas', 'times']" />
+        </template>
+      </el-table-column>
+      <el-table-column label="排序" prop="sort" show-overflow-tooltip sortable />
+      <el-table-column label="更新時間" prop="upd_date" show-overflow-tooltip sortable width="200" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
           <el-button type="text" @click="handleEdit(row)">編輯</el-button>
@@ -57,7 +71,7 @@
       @current-change="handleCurrentChange"
       @size-change="handleSizeChange"
     />
-    <table-edit ref="edit" />
+    <table-edit ref="edit" @trigger-handleQuery="handleQuery" />
   </div>
 </template>
 
@@ -66,7 +80,7 @@
   import TableEdit from './components/TableEdit'
 
   export default {
-    name: 'Product',
+    name: 'CompanyWebsite',
     components: {
       TableEdit,
     },
@@ -82,8 +96,8 @@
     },
     data() {
       return {
-        url: 'http://localhost:5252/api/product',
-        url2: 'http://localhost:5252/api/company',
+        url: 'http://localhost:5252/api/company_website',
+        url2: 'http://localhost:5252/api/website_type',
         return_msg: '',
         return_success: '',
         imgShow: true,
@@ -100,7 +114,8 @@
           pageNo: 1,
           pageSize: 20,
           searchword: '',
-          searchword2: '',
+          use_yn_set: true,
+          type: '',
         },
         timeOutID: null,
       }
@@ -139,11 +154,11 @@
       },
       handleDelete(row) {
         console.log('===methods handleDelete')
-        console.log(row.p_id)
-        if (row.p_id) {
+        console.log(row.id)
+        if (row.id) {
           this.$baseConfirm('你確定要刪除當前項嗎?', null, async () => {
             let ls_url = this.url
-            ls_url += `/${row.p_id}`
+            ls_url += `/${row.id}`
 
             await axios
               .delete(ls_url, {})
@@ -196,17 +211,29 @@
 
         let ls_url = `${this.url}?`
 
+        if (this.queryForm.use_yn_set) {
+          ls_url += 'UseYN=Y&'
+        } else {
+          ls_url += 'UseYN=N&'
+        }
+
         if (this.queryForm.searchword != '') {
           ls_url += `searchword=${this.queryForm.searchword}` + '&'
         }
 
-        if (this.queryForm.searchword2 != '') {
-          ls_url += `searchword2=${this.queryForm.searchword2}` + '&'
+        if (
+          this.queryForm.type !== '' &&
+          this.queryForm.type !== null &&
+          this.queryForm.type !== undefined &&
+          this.queryForm.type !== '%'
+        ) {
+          console.log(this.queryForm.type)
+          ls_url += `&type_id=${this.queryForm.type}` + '&'
         }
 
         ls_url = ls_url.substring(0, ls_url.length - 1)
 
-        //遊戲主資料
+        //主資料
         await axios
           .get(ls_url)
           .then((response) => (this.list = response.data))
@@ -214,9 +241,9 @@
             console.log(error)
           })
 
-        let ls_url2 = `${this.url2}`
+        let ls_url2 = `${this.url2}?UseYN=Y`
 
-        //公司
+        //分類
         await axios
           .get(ls_url2)
           .then((response) => (this.list_type = response.data))

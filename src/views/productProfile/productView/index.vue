@@ -41,6 +41,7 @@
       <el-table-column label="類型" prop="content_style" show-overflow-tooltip />
       <el-table-column label="遊玩時數" prop="play_time" show-overflow-tooltip />
       <el-table-column label="備註" prop="remark" show-overflow-tooltip />
+      <el-table-column label="更新時間" prop="upd_date" show-overflow-tooltip sortable width="200" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
           <el-button type="text" @click="handleEdit(row)">編輯</el-button>

@@ -1,7 +1,9 @@
 <template>
-  <el-dialog :title="title" :visible.sync="dialogFormVisible" width="800px" @close="close">
+  <el-dialog :title="title" :visible.sync="dialogFormVisible" width="500px" @close="close">
     <el-form ref="form" label-width="80px" :model="form" :rules="rules">
-      <!-- 公司company -->
+      <el-form-item label="代碼" prop="p_id">
+        <el-input v-model.trim="form.p_id" autocomplete="off" :disabled="form_lock" maxlength="10" />
+      </el-form-item>
       <el-form-item label="公司" prop="c_id">
         <el-select v-model="form.c_id" filterable placeholder="請選擇公司">
           <el-option v-for="type in form_type" :key="type.c_id" :label="type.c_id + ' ' + type.name" :value="type.c_id" />
@@ -10,40 +12,12 @@
         <el-button icon="el-icon-plus" type="primary" @click="showCompanyInput">新增公司</el-button>
       </el-form-item>
       <el-form-item v-show="newCompany_show" label="新增公司" prop="newCompany">
-        <el-col :span="16">
-          <el-input v-model.trim="newCompany.c_id" autocomplete="off" maxlength="10" placeholder="代號" />
-        </el-col>
-        &nbsp;
-        <span style="color: red">最後代號: {{ maxCid }}</span>
-        <br />
-        <el-col :span="16">
-          <el-input v-model.trim="newCompany.name" autocomplete="off" maxlength="200" placeholder="公司名稱" />
-        </el-col>
-        <br />
-        <el-col :span="24">
-          <el-select v-model="newCompany.c_type" placeholder="請選擇類型">
-            <el-option v-for="type in company_type" :key="type.c_type" :label="type.c_type + ' ' + type.c_type_name" :value="type.c_type" />
-          </el-select>
-          &nbsp;
-          <el-button type="primary" @click="saveNewCompany">新公司存檔</el-button>
-        </el-col>
-        <br />
-      </el-form-item>
-      <!-- 公司company -->
-
-      <!-- 遊戲product -->
-      <el-form-item label="商業類型">
-        <el-select v-model="search_type" placeholder="請選擇商業類型" @change="getMaxPid">
-          <el-option label="A 公司" value="A" />
-          <el-option label="B 同人" value="B" />
+        <el-input v-model.trim="newCompany.c_id" autocomplete="off" maxlength="10" placeholder="代號" />
+        <el-input v-model.trim="newCompany.name" autocomplete="off" maxlength="200" placeholder="公司名稱" />
+        <el-select v-model="newCompany.c_type" placeholder="請選擇類型">
+          <el-option v-for="type in company_type" :key="type.c_type" :label="type.c_type + ' ' + type.c_type_name" :value="type.c_type" />
         </el-select>
-      </el-form-item>
-      <el-form-item label="代碼" prop="p_id">
-        <el-col :span="16">
-          <el-input v-model.trim="form.p_id" autocomplete="off" :disabled="form_lock" maxlength="10" />
-        </el-col>
-        &nbsp;
-        <span style="color: red">最後代號: {{ maxPid }}</span>
+        <el-button type="primary" @click="saveNewCompany">新公司存檔</el-button>
       </el-form-item>
       <el-form-item label="遊戲名稱" prop="name">
         <el-input v-model.trim="form.name" autocomplete="off" maxlength="200" />
@@ -63,7 +37,6 @@
       <el-form-item label="備註" prop="remark">
         <el-input v-model.trim="form.remark" autocomplete="off" maxlength="200" />
       </el-form-item>
-      <!-- 遊戲product -->
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button @click="close">取 消</el-button>
@@ -80,21 +53,9 @@
     data() {
       return {
         url: 'http://localhost:5252/api/company_type',
-        url_other: {
-          url1: 'http://localhost:5252/api/product/getnewpid',
-          url2: 'http://localhost:5252/api/company/getnewcid',
-          url3: 'http://localhost:5252/api/product_release_day/getbypid',
-          url4: 'http://localhost:5252/api/product_website',
-          url5: 'http://localhost:5252/api/product_pic',
-        },
         params: '',
         return_msg: '',
         return_success: '',
-
-        //===新增代碼===//
-        search_type: '',
-        maxPid: '',
-        maxCid: '',
         newCompany_show: false,
         newCompany: {
           c_id: '',
@@ -102,7 +63,6 @@
           c_type: '',
         },
         company_type: [],
-
         form: {
           p_id: '',
           c_id: '',
@@ -114,11 +74,6 @@
           remark: '',
         },
         form_type: [],
-
-        data_Release: [],
-        data_Website: [],
-        data_Pic: [],
-
         form_lock: false,
         rules: {
           p_id: [{ required: true, trigger: 'blur', message: '請輸入代號' }],
@@ -142,63 +97,11 @@
           this.title = '編輯'
           this.form = Object.assign({}, row)
           this.form_lock = true
-
-          this.getRelease()
-          this.getWebsite()
-          this.getPic()
         }
         this.form_type = list_type
         this.dialogFormVisible = true
 
         this.getCompanyType()
-      },
-      async getPic() {
-        let ls_url = `${this.url_other.url5}`
-        ls_url += `/${this.form.p_id}`
-
-        //分類
-        await axios
-          .get(ls_url)
-          .then((response) => (this.data_Pic = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-      },
-      async getWebsite() {
-        let ls_url = `${this.url_other.url4}`
-        ls_url += `/${this.form.p_id}`
-
-        //分類
-        await axios
-          .get(ls_url)
-          .then((response) => (this.data_Website = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-      },
-      async getRelease() {
-        let ls_url = `${this.url_other.url3}?`
-        ls_url += `id=${this.form.p_id}`
-
-        //分類
-        await axios
-          .get(ls_url)
-          .then((response) => (this.data_Release = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-      },
-      async getMaxPid() {
-        let ls_url = `${this.url_other.url1}?`
-        ls_url += `searchword=${this.search_type}`
-
-        //分類
-        await axios
-          .get(ls_url)
-          .then((response) => (this.maxPid = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
       },
       async getCompanyType() {
         console.log('getCompanyType')
@@ -213,17 +116,7 @@
             console.log(error)
           })
       },
-      async showCompanyInput() {
-        let ls_url = `${this.url_other.url2}`
-
-        //分類
-        await axios
-          .get(ls_url)
-          .then((response) => (this.maxCid = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-
+      showCompanyInput() {
         if (this.newCompany_show) {
           this.newCompany_show = false
         } else {

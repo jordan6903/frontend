@@ -46,7 +46,7 @@ export const asyncRoutes = [
         name: 'Index',
         component: () => import('@/views/index/index'),
         meta: {
-          title: '首页',
+          title: '首頁',
           icon: 'home',
           affix: true,
         },
@@ -93,51 +93,31 @@ export const asyncRoutes = [
       },
       {
         path: 'rating',
-        name: 'Rating',
-        component: () => import('@/views/basicProfile/rating/index'),
-        meta: {
-          title: '分級設定檔 Rating',
-          icon: 'chalkboard',
-          permissions: ['admin'],
-        },
-      },
-      {
-        path: 'ratingType',
-        name: 'RatingType',
-        component: () => import('@/views/basicProfile/ratingType/index'),
-        meta: {
-          title: '分級分類設定檔 Rating_type',
-          icon: 'chalkboard',
-          permissions: ['admin'],
-        },
-      },
-      {
-        path: 'staff',
         component: EmptyLayout,
         redirect: 'noRedirect',
-        name: 'Staff',
+        name: 'rating',
         alwaysShow: true,
         meta: {
-          title: '製作人員相關',
+          title: '分級設定檔 Rating',
           permissions: ['admin'],
         },
         children: [
           {
-            path: 'staffInfo',
-            name: 'StaffInfo',
-            component: () => import('@/views/basicProfile/staff/staffInfo/index'),
+            path: 'rating',
+            name: 'Rating',
+            component: () => import('@/views/basicProfile/rating/index'),
             meta: {
-              title: '製作人員資訊 Staff_info',
+              title: '分級設定檔 Rating',
               icon: 'chalkboard',
               permissions: ['admin'],
             },
           },
           {
-            path: 'staffType',
-            name: 'StaffType',
-            component: () => import('@/views/basicProfile/staff/staffType/index'),
+            path: 'ratingType',
+            name: 'RatingType',
+            component: () => import('@/views/basicProfile/ratingType/index'),
             meta: {
-              title: '工作類型設計檔 Staff_type',
+              title: '分級分類設定檔 Rating_type',
               icon: 'chalkboard',
               permissions: ['admin'],
             },
@@ -154,26 +134,6 @@ export const asyncRoutes = [
     alwaysShow: true,
     meta: { title: '公司', icon: 'box-open' },
     children: [
-      {
-        path: 'companyRelationInfo',
-        name: 'CompanyRelationInfo',
-        component: () => import('@/views/companyProfile/companyRelationInfo/index'),
-        meta: {
-          title: '公司間關聯設計檔 Company_relation_info',
-          icon: 'chalkboard',
-          permissions: ['admin'],
-        },
-      },
-      {
-        path: 'companyType',
-        name: 'CompanyType',
-        component: () => import('@/views/companyProfile/companyType/index'),
-        meta: {
-          title: '公司類型設定檔 Company_type',
-          icon: 'chalkboard',
-          permissions: ['admin'],
-        },
-      },
       {
         path: 'company',
         name: 'Company',
@@ -194,6 +154,26 @@ export const asyncRoutes = [
           permissions: ['admin'],
         },
       },
+      {
+        path: 'companyRelationInfo',
+        name: 'CompanyRelationInfo',
+        component: () => import('@/views/companyProfile/companyRelationInfo/index'),
+        meta: {
+          title: '公司間關聯設計檔 Company_relation_info',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'companyType',
+        name: 'CompanyType',
+        component: () => import('@/views/companyProfile/companyType/index'),
+        meta: {
+          title: '公司類型設定檔 Company_type',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
     ],
   },
   {
@@ -205,41 +185,11 @@ export const asyncRoutes = [
     meta: { title: '遊戲', icon: 'box-open' },
     children: [
       {
-        path: 'productScoreType',
-        name: 'ProductScoreType',
-        component: () => import('@/views/productProfile/productScoreType/index'),
+        path: 'productView',
+        name: 'ProductView',
+        component: () => import('@/views/productProfile/productView/index'),
         meta: {
-          title: '遊戲評分類型設定檔 Product_score_type',
-          icon: 'chalkboard',
-          permissions: ['admin'],
-        },
-      },
-      {
-        path: 'productRelationInfo',
-        name: 'ProductRelationInfo',
-        component: () => import('@/views/productProfile/productRelationInfo/index'),
-        meta: {
-          title: '遊戲間關聯設計檔 Product_relation_info',
-          icon: 'chalkboard',
-          permissions: ['admin'],
-        },
-      },
-      {
-        path: 'productTypeClass',
-        name: 'ProductTypeClass',
-        component: () => import('@/views/productProfile/productTypeClass/index'),
-        meta: {
-          title: '屬性標籤之分類設計檔 Product_type_class',
-          icon: 'chalkboard',
-          permissions: ['admin'],
-        },
-      },
-      {
-        path: 'productTypeInfo',
-        name: 'ProductTypeInfo',
-        component: () => import('@/views/productProfile/productTypeInfo/index'),
-        meta: {
-          title: '屬性標籤設計檔 Product_type_info',
+          title: '遊戲統整 ProductView',
           icon: 'chalkboard',
           permissions: ['admin'],
         },
@@ -294,6 +244,89 @@ export const asyncRoutes = [
           permissions: ['admin'],
         },
       },
+      {
+        path: 'staff',
+        component: EmptyLayout,
+        redirect: 'noRedirect',
+        name: 'Staff',
+        alwaysShow: true,
+        meta: {
+          title: '製作人員相關',
+          permissions: ['admin'],
+        },
+        children: [
+          {
+            path: 'staff',
+            name: 'Staff',
+            component: () => import('@/views/basicProfile/staff/staff/index'),
+            meta: {
+              title: '製作人員 Staff',
+              icon: 'chalkboard',
+              permissions: ['admin'],
+            },
+          },
+          {
+            path: 'staffInfo',
+            name: 'StaffInfo',
+            component: () => import('@/views/basicProfile/staff/staffInfo/index'),
+            meta: {
+              title: '製作人員資訊 Staff_info',
+              icon: 'chalkboard',
+              permissions: ['admin'],
+            },
+          },
+          {
+            path: 'staffType',
+            name: 'StaffType',
+            component: () => import('@/views/basicProfile/staff/staffType/index'),
+            meta: {
+              title: '工作類型設計檔 Staff_type',
+              icon: 'chalkboard',
+              permissions: ['admin'],
+            },
+          },
+        ],
+      },
+      {
+        path: 'productScoreType',
+        name: 'ProductScoreType',
+        component: () => import('@/views/productProfile/productScoreType/index'),
+        meta: {
+          title: '遊戲評分類型設定檔 Product_score_type',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'productRelationInfo',
+        name: 'ProductRelationInfo',
+        component: () => import('@/views/productProfile/productRelationInfo/index'),
+        meta: {
+          title: '遊戲間關聯設計檔 Product_relation_info',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'productTypeClass',
+        name: 'ProductTypeClass',
+        component: () => import('@/views/productProfile/productTypeClass/index'),
+        meta: {
+          title: '屬性標籤之分類設計檔 Product_type_class',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'productTypeInfo',
+        name: 'ProductTypeInfo',
+        component: () => import('@/views/productProfile/productTypeInfo/index'),
+        meta: {
+          title: '屬性標籤設計檔 Product_type_info',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
     ],
   },
   {
@@ -314,6 +347,46 @@ export const asyncRoutes = [
           permissions: ['admin'],
         },
       },
+      {
+        path: 'productWebsite',
+        name: 'ProductWebsite',
+        component: () => import('@/views/websiteProfile/productWebsite/index'),
+        meta: {
+          title: '遊戲網址連結 Product_Website',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'productPic',
+        name: 'ProductPic',
+        component: () => import('@/views/websiteProfile/productPic/index'),
+        meta: {
+          title: '遊戲圖片連結 Product_Pic',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'companyWebsite',
+        name: 'CompanyWebsite',
+        component: () => import('@/views/websiteProfile/companyWebsite/index'),
+        meta: {
+          title: '公司網址連結 Company_Website',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'companyPic',
+        name: 'CompanyPic',
+        component: () => import('@/views/websiteProfile/companyPic/index'),
+        meta: {
+          title: '公司圖片連結 Company_Pic',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
     ],
   },
   {
@@ -325,11 +398,11 @@ export const asyncRoutes = [
     meta: { title: '漢化', icon: 'box-open' },
     children: [
       {
-        path: 'translationTeamType',
-        name: 'TranslationTeamType',
-        component: () => import('@/views/translationProfile/translationTeamType/index'),
+        path: 'translationTeam',
+        name: 'TranslationTeam',
+        component: () => import('@/views/translationProfile/translationTeam/index'),
         meta: {
-          title: '漢化類型設定檔 Translation_team_type',
+          title: '漢化組 Translation_team',
           icon: 'chalkboard',
           permissions: ['admin'],
         },
@@ -345,21 +418,11 @@ export const asyncRoutes = [
         },
       },
       {
-        path: 'translationTeam',
-        name: 'TranslationTeam',
-        component: () => import('@/views/translationProfile/translationTeam/index'),
+        path: 'translationTeamType',
+        name: 'TranslationTeamType',
+        component: () => import('@/views/translationProfile/translationTeamType/index'),
         meta: {
-          title: '漢化組 Translation_team',
-          icon: 'chalkboard',
-          permissions: ['admin'],
-        },
-      },
-      {
-        path: 'translationTeamBatch',
-        name: 'TranslationTeamBatch',
-        component: () => import('@/views/translationProfile/translationTeamBatch/index'),
-        meta: {
-          title: '漢化組批次 Translation_team_batch',
+          title: '漢化類型設定檔 Translation_team_type',
           icon: 'chalkboard',
           permissions: ['admin'],
         },

@@ -10,18 +10,16 @@
             <el-button icon="el-icon-search" native-type="submit" type="primary" @click="handleQuery">查詢</el-button>
           </el-form-item>
           &nbsp;&nbsp;&nbsp;&nbsp;
-          <el-form-item label="啟用">
-            <el-switch v-model="queryForm.use_yn_set" />
-          </el-form-item>
-          &nbsp;&nbsp;&nbsp;&nbsp;
-          <el-form-item label="分類">
+          <el-form-item>
+            <router-link :to="urlarray.type">工作類型連結</router-link>
+            &nbsp;
             <el-select v-model="queryForm.type" placeholder="請選擇分類">
               <el-option label="% 全選" value="%" />
               <el-option
-                v-for="type in list_type"
-                :key="type.rating_type"
-                :label="type.rating_type + ' ' + type.name"
-                :value="type.rating_type"
+                v-for="type in list_type.type"
+                :key="type.staff_typeid"
+                :label="type.staff_typeid + ' ' + type.name"
+                :value="type.staff_typeid"
               />
             </el-select>
           </el-form-item>
@@ -33,12 +31,6 @@
       <vab-query-form-left-panel>
         <el-button icon="el-icon-plus" type="primary" @click="handleAdd">新增</el-button>
         <el-button icon="el-icon-delete" type="danger" @click="handleDelete">删除</el-button>
-        <!--
-        <el-button type="primary" @click="testMessage">baseMessage</el-button>
-        <el-button type="primary" @click="testALert">baseAlert</el-button>
-        <el-button type="primary" @click="testConfirm">baseConfirm</el-button>
-        <el-button type="primary" @click="testNotify">baseNotify</el-button>
-        -->
       </vab-query-form-left-panel>
     </vab-query-form>
 
@@ -52,20 +44,11 @@
       @sort-change="tableSortChange"
     >
       <el-table-column show-overflow-tooltip type="selection" width="55" />
-      <el-table-column label="代碼" prop="rating_id" show-overflow-tooltip sortable width="95" />
-      <el-table-column label="分類" prop="type_Name" show-overflow-tooltip sortable width="150" />
-      <el-table-column label="名稱" prop="name" show-overflow-tooltip />
-      <el-table-column label="簡稱" prop="shortName" show-overflow-tooltip />
-      <el-table-column label="日文" prop="name_JP" show-overflow-tooltip />
-      <el-table-column label="英文" prop="name_EN" show-overflow-tooltip />
-      <el-table-column label="敘述" prop="content" show-overflow-tooltip />
-      <el-table-column label="啟用" prop="use_yn" show-overflow-tooltip>
-        <template #default="{ row }">
-          <vab-icon v-show="row.use_yn" :icon="['fas', 'check']" />
-          <vab-icon v-show="!row.use_yn" :icon="['fas', 'times']" />
-        </template>
-      </el-table-column>
-      <el-table-column label="排序" prop="sort" show-overflow-tooltip sortable />
+      <el-table-column label="代碼" prop="id" show-overflow-tooltip sortable width="100" />
+      <el-table-column label="遊戲名稱" prop="p_Name" show-overflow-tooltip sortable width="200" />
+      <el-table-column label="人員" prop="staff_Name" show-overflow-tooltip />
+      <el-table-column label="工作類型" prop="staff_type_Name" show-overflow-tooltip />
+      <el-table-column label="備註" prop="remark" show-overflow-tooltip />
       <el-table-column label="更新時間" prop="upd_date" show-overflow-tooltip sortable width="200" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
@@ -83,7 +66,7 @@
       @current-change="handleCurrentChange"
       @size-change="handleSizeChange"
     />
-    <table-edit ref="edit" />
+    <table-edit ref="edit" @trigger-handleQuery="handleQuery" />
   </div>
 </template>
 
@@ -92,7 +75,7 @@
   import TableEdit from './components/TableEdit'
 
   export default {
-    name: 'Rating',
+    name: 'Staff',
     components: {
       TableEdit,
     },
@@ -108,13 +91,22 @@
     },
     data() {
       return {
-        url: 'http://localhost:5252/api/rating',
-        url2: 'http://localhost:5252/api/rating_type',
+        url: 'http://localhost:5252/api/staff',
+        url_type: {
+          url1: 'http://localhost:5252/api/staff_type',
+          url2: 'http://localhost:5252/api/staff_info',
+        },
+        urlarray: {
+          type: '/basicProfile/staff/staffType',
+        },
         return_msg: '',
         return_success: '',
         imgShow: true,
         list: [],
-        list_type: [],
+        list_type: {
+          type: [],
+          info: [],
+        },
         imageList: [],
         listLoading: true,
         layout: 'total, sizes, prev, pager, next, jumper',
@@ -126,7 +118,6 @@
           pageNo: 1,
           pageSize: 20,
           searchword: '',
-          use_yn_set: true,
           type: '',
         },
         timeOutID: null,
@@ -137,15 +128,6 @@
         return this.$baseTableHeight()
       },
     },
-    // watch: {
-    //   list (newVal, oldVal) {
-    //     console.log("===watch list");
-    //     this.list.forEach((item, index) => {
-    //       item.upd_date = this.datetimeformat(item.upd_date);
-    //       item.create_dt = this.datetimeformat(item.create_dt);
-    //     })
-    //   }
-    // },
     created() {
       console.log('===created')
       this.fetchData()
@@ -158,28 +140,8 @@
       console.log('===mounted')
     },
     methods: {
-      // datetimeformat(dateString){
-      //   if(!dateString){
-      //     return "";
-      //   }else{
-      //     const date = new Date(dateString);
-      //     const year = date.getFullYear();
-      //     const month = String(date.getMonth() + 1).padStart(2, '0');
-      //     const day = String(date.getDate()).padStart(2, '0');
-      //     const hours = String(date.getHours()).padStart(2, '0');
-      //     const minutes = String(date.getMinutes()).padStart(2, '0');
-      //     return `${year}-${month}-${day} ${hours}:${minutes}`;
-      //   }
-      // },
       tableSortChange() {
         console.log('===methods tableSortChange')
-        /*
-        const imageList = []
-        this.$refs.tableSort.tableData.forEach((item, index) => {
-          imageList.push(item.img)
-        })
-        this.imageList = imageList
-        */
       },
       setSelectRows(val) {
         console.log('===methods setSelectRows')
@@ -195,13 +157,11 @@
       },
       handleDelete(row) {
         console.log('===methods handleDelete')
-        console.log(row.rating_id)
-        if (row.rating_id) {
+        console.log(row.id)
+        if (row.id) {
           this.$baseConfirm('你確定要刪除當前項嗎?', null, async () => {
-            //const { msg } = await doDelete({ ids: row.id })
-
             let ls_url = this.url
-            ls_url += `/${row.rating_id}`
+            ls_url += `/${row.id}`
 
             await axios
               .delete(ls_url, {})
@@ -226,12 +186,6 @@
         } else {
           if (this.selectRows.length > 0) {
             this.$baseMessage('尚未開放此功能', 'error')
-            // const ids = this.selectRows.map((item) => item.id).join()
-            // this.$baseConfirm('你确定要删除选中项吗', null, async () => {
-            //   const { msg } = await doDelete({ ids: ids })
-            //   this.$baseMessage(msg, 'success')
-            //   this.fetchData()
-            // })
           } else {
             this.$baseMessage('未選中任何一行', 'error')
             return false
@@ -260,12 +214,6 @@
 
         let ls_url = `${this.url}?`
 
-        if (this.queryForm.use_yn_set) {
-          ls_url += 'UseYN=Y&'
-        } else {
-          ls_url += 'UseYN=N&'
-        }
-
         if (this.queryForm.searchword != '') {
           ls_url += `searchword=${this.queryForm.searchword}` + '&'
         }
@@ -276,8 +224,7 @@
           this.queryForm.type !== undefined &&
           this.queryForm.type !== '%'
         ) {
-          console.log(this.queryForm.type)
-          ls_url += `&rating_type=${this.queryForm.type}` + '&'
+          ls_url += `staff_typeid=${this.queryForm.type}` + '&'
         }
 
         ls_url = ls_url.substring(0, ls_url.length - 1)
@@ -290,23 +237,25 @@
             console.log(error)
           })
 
-        let ls_url2 = `${this.url2}?UseYN=Y`
+        let ls_url1 = `${this.url_type.url1}?UseYN=Y`
+        let ls_url2 = `${this.url_type.url2}`
 
-        //分類
+        //分類type
         await axios
-          .get(ls_url2)
-          .then((response) => (this.list_type = response.data))
+          .get(ls_url1)
+          .then((response) => (this.list_type.type = response.data))
           .catch(function (error) {
             console.log(error)
           })
 
-        /*
-        const imageList = []
-        data.forEach((item, index) => {
-          imageList.push(item.img)
-        })
-        this.imageList = imageList
-        */
+        //資訊info
+        await axios
+          .get(ls_url2)
+          .then((response) => (this.list_type.info = response.data))
+          .catch(function (error) {
+            console.log(error)
+          })
+
         this.total = this.list.length
         this.timeOutID = setTimeout(() => {
           this.listLoading = false

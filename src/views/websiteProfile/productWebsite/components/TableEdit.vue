@@ -29,60 +29,25 @@
         </el-form-item>
       </template>
 
-      <template v-if="!form_lock">
-        <el-form-item label="人員搜尋">
-          <el-col :span="16">
-            <el-input v-model.trim="searchword2" autocomplete="off" />
-          </el-col>
-          &nbsp;
-          <el-button icon="el-icon-search" type="primary" @click="staffQuery">查詢</el-button>
-        </el-form-item>
-        <el-form-item label="人員代碼" prop="staff_id">
-          <el-select v-model="form.staff_id" placeholder="請選擇人員">
-            <el-option
-              v-for="type in search_staff"
-              :key="type.staff_id"
-              :label="type.staff_id + ' - ' + type.name"
-              :value="type.staff_id"
-            />
-          </el-select>
-          &nbsp;
-          <el-tag v-if="search_staff && search_staff.length === 0" type="info">未匯入人員</el-tag>
-          <el-tag v-else>已匯入人員</el-tag>
-          &nbsp;
-          <el-button icon="el-icon-plus" type="primary" @click="showStaffInput">新增人員</el-button>
-        </el-form-item>
-
-        <el-form-item v-show="newStaff_show" label="新增人員" prop="newStaff">
-          <el-input v-model.trim="newStaff.staff_id" autocomplete="off" maxlength="10" placeholder="代號" />
-          <el-input v-model.trim="newStaff.name" autocomplete="off" maxlength="100" placeholder="人名" />
-          <el-button type="primary" @click="saveNewStaff">新人員存檔</el-button>
-        </el-form-item>
-      </template>
-
-      <template v-else>
-        <el-form-item label="人員代碼" prop="staff_id">
-          <el-input v-model.trim="form.staff_id" autocomplete="off" :disabled="form_lock" maxlength="10" />
-        </el-form-item>
-
-        <el-form-item label="人員名稱">
-          <el-input v-model.trim="form.staff_Name" autocomplete="off" :disabled="form_lock" />
-        </el-form-item>
-      </template>
-
-      <el-form-item label="工作類型" prop="staff_typeid">
-        <el-select v-model="form.staff_typeid" placeholder="請選擇分類">
-          <el-option
-            v-for="type in form_type"
-            :key="type.staff_typeid"
-            :label="type.staff_typeid + ' ' + type.name"
-            :value="type.staff_typeid"
-          />
+      <el-form-item label="分類" prop="type_id">
+        <el-select v-model="form.type_id" placeholder="請選擇分類">
+          <el-option v-for="type in form_type" :key="type.type_id" :label="type.type_id + ' ' + type.name" :value="type.type_id" />
         </el-select>
       </el-form-item>
-
+      <el-form-item label="名稱" prop="name">
+        <el-input v-model.trim="form.name" autocomplete="off" maxlength="30" />
+      </el-form-item>
+      <el-form-item label="網址" prop="url">
+        <el-input v-model.trim="form.url" autocomplete="off" maxlength="4000" />
+      </el-form-item>
       <el-form-item label="備註" prop="remark">
         <el-input v-model.trim="form.remark" autocomplete="off" maxlength="50" />
+      </el-form-item>
+      <el-form-item label="啟用" prop="use_yn">
+        <el-switch v-model="form.use_yn" />
+      </el-form-item>
+      <el-form-item label="排序" prop="sort">
+        <el-input v-model.number="form.sort" autocomplete="off" maxlength="3" type="number" />
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -100,32 +65,26 @@
     data() {
       return {
         url: '',
-        newStaff_show: false,
         params: '',
         return_msg: '',
         return_success: '',
         searchword: '',
         search_product: [],
-        searchword2: '',
-        search_staff: [],
         form: {
           p_id: '',
-          staff_id: '',
-          staff_typeid: 0,
+          type_id: '',
+          name: '',
+          url: '',
           remark: '',
+          use_yn: true,
+          sort: 0,
         },
         form_type: [],
-        form_info: [],
         form_lock: false,
-        newStaff: {
-          staff_id: '',
-          name: '',
-          content: '',
-        },
         rules: {
           p_id: [{ required: true, trigger: 'blur', message: '請輸入代號' }],
-          staff_id: [{ required: true, trigger: 'blur', message: '請選擇人員' }],
-          staff_typeid: [{ required: true, trigger: 'blur', message: '請選擇工作類型' }],
+          type_id: [{ required: true, trigger: 'blur', message: '請選擇分類' }],
+          url: [{ required: true, trigger: 'blur', message: '請輸入網址' }],
         },
         title: '',
         dialogFormVisible: false,
@@ -144,18 +103,9 @@
           this.title = '編輯'
           this.form = Object.assign({}, row)
           this.form_lock = true
+          this.form_type = list_type
         }
         this.dialogFormVisible = true
-
-        this.form_type = list_type.type
-        this.form_info = list_type.info
-      },
-      showStaffInput() {
-        if (this.newStaff_show) {
-          this.newStaff_show = false
-        } else {
-          this.newStaff_show = true
-        }
       },
       close() {
         console.log('===close')
@@ -177,65 +127,6 @@
             console.log(error)
           })
       },
-      async staffQuery() {
-        let ls_url = 'http://localhost:5252/api/staff_info'
-        ls_url += `?searchword=${this.searchword2}`
-        await axios
-          .get(ls_url)
-          .then((response) => (this.search_staff = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-      },
-      async saveNewStaff() {
-        console.log('===saveNewStaff')
-        if (this.newStaff.staff_id == '' || this.newStaff.staff_id == null || this.newStaff.staff_id == undefined) {
-          alert('請輸入人員id')
-          return false
-        }
-        if (this.newStaff.name == '' || this.newStaff.name == null || this.newStaff.name == undefined) {
-          alert('請輸入人員name')
-          return false
-        }
-
-        let ls_url = 'http://localhost:5252/api/staff_info'
-        this.params = this.newStaff
-
-        console.log(this.newStaff)
-        console.log(this.params)
-
-        await axios
-          .post(ls_url, this.params)
-          .then((response) => (this.return_msg = response.data.message))
-          .catch(function (error) {
-            // 请求失败处理
-            console.log(error)
-          })
-
-        //拆解
-        let msg_array = this.return_msg.split('#')
-        this.return_success = msg_array[0]
-        this.return_msg = msg_array[1]
-
-        this.$baseMessage(this.return_msg, 'success')
-
-        //成功就重整公司下拉選單
-        if (this.return_success == 'Y') {
-          this.form_info = []
-
-          await axios
-            .get('http://localhost:5252/api/staff_info')
-            .then((response) => (this.form_info = response.data))
-            .catch(function (error) {
-              // 请求失败处理
-              console.log(error)
-            })
-
-          this.newStaff.staff_id = ''
-          this.newStaff.name = ''
-          this.newStaff_show = false
-        }
-      },
       save() {
         console.log('===save')
         this.$refs['form'].validate(async (valid) => {
@@ -243,7 +134,7 @@
             if (!this.form_lock) {
               console.log('新增')
               this.title = '新增'
-              this.url = 'http://localhost:5252/api/staff'
+              this.url = 'http://localhost:5252/api/product_website'
               this.params = this.form
 
               console.log(this.form)
@@ -259,7 +150,7 @@
             } else {
               console.log('編輯')
               this.title = '編輯'
-              this.url = `http://localhost:5252/api/staff/${this.form.id}`
+              this.url = `http://localhost:5252/api/product_website/${this.form.id}`
               this.params = this.form
 
               console.log(this.form)
