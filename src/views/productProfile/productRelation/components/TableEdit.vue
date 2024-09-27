@@ -65,7 +65,7 @@
         <el-input v-model.trim="form.p_id_to" autocomplete="off" maxlength="10" :disabled="form_lock" />
       </el-form-item>
       -->
-      <el-form-item label="屬性/標籤分類" prop="relation_id">
+      <el-form-item label="關聯分類" prop="relation_id">
         <el-select v-model="form.relation_id" placeholder="請選擇分類">
           <el-option
             v-for="type in form_type"

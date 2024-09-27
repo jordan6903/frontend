@@ -29,6 +29,10 @@
         </el-form-item>
       </template>
 
+      <el-form-item label="名稱" prop="name">
+        <el-input v-model.trim="form.name" autocomplete="off" maxlength="200" />
+      </el-form-item>
+
       <el-form-item label="發售日" prop="sale_Date">
         <el-input v-model.trim="form.sale_Date" autocomplete="off" maxlength="8" />
       </el-form-item>
@@ -96,6 +100,7 @@
         search_product: [],
         form: {
           p_id: '',
+          name: '',
           sale_Date: '',
           presale_Date: '',
           price: 0,

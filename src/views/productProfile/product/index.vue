@@ -4,10 +4,10 @@
       <vab-query-form-left-panel>
         <el-form ref="form" :inline="true" :model="queryForm" @submit.native.prevent>
           <el-form-item>
-            <el-input v-model="queryForm.searchword" placeholder="輸入遊戲名稱或id..." />
+            <el-input v-model="queryForm.searchword2" placeholder="輸入公司名稱或id..." />
           </el-form-item>
           <el-form-item>
-            <el-input v-model="queryForm.searchword2" placeholder="輸入公司名稱或id..." />
+            <el-input v-model="queryForm.searchword" placeholder="輸入遊戲名稱或id..." />
           </el-form-item>
           <el-form-item>
             <el-button icon="el-icon-search" native-type="submit" type="primary" @click="handleQuery">查詢</el-button>
@@ -33,14 +33,10 @@
       @sort-change="tableSortChange"
     >
       <el-table-column show-overflow-tooltip type="selection" width="55" />
-      <el-table-column label="代碼" prop="p_id" show-overflow-tooltip sortable width="150" />
-      <el-table-column label="公司名稱" prop="company_name" show-overflow-tooltip sortable width="150" />
-      <el-table-column label="遊戲名稱" prop="name" show-overflow-tooltip width="150" />
-      <el-table-column label="中文名稱" prop="c_Name" show-overflow-tooltip />
-      <el-table-column label="介紹" prop="content" show-overflow-tooltip />
-      <el-table-column label="類型" prop="content_style" show-overflow-tooltip />
-      <el-table-column label="遊玩時數" prop="play_time" show-overflow-tooltip />
-      <el-table-column label="備註" prop="remark" show-overflow-tooltip />
+      <el-table-column label="公司名稱" prop="company_name" show-overflow-tooltip sortable width="120" />
+      <el-table-column label="代碼" prop="p_id" show-overflow-tooltip sortable width="120" />
+      <el-table-column label="遊戲名稱" prop="name" show-overflow-tooltip />
+      <el-table-column label="中文名稱" prop="c_Name" show-overflow-tooltip width="150" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
           <el-button type="text" @click="handleEdit(row)">編輯</el-button>
@@ -57,7 +53,7 @@
       @current-change="handleCurrentChange"
       @size-change="handleSizeChange"
     />
-    <table-edit ref="edit" />
+    <table-edit ref="edit" @trigger-handleQuery="handleQuery" />
   </div>
 </template>
 

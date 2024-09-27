@@ -62,7 +62,7 @@
       @current-change="handleCurrentChange"
       @size-change="handleSizeChange"
     />
-    <table-edit ref="edit" />
+    <table-edit ref="edit" @trigger-handleQuery="handleQuery" />
   </div>
 </template>
 

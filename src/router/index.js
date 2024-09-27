@@ -185,16 +185,6 @@ export const asyncRoutes = [
     meta: { title: '遊戲', icon: 'box-open' },
     children: [
       {
-        path: 'productView',
-        name: 'ProductView',
-        component: () => import('@/views/productProfile/productView/index'),
-        meta: {
-          title: '遊戲統整 ProductView',
-          icon: 'chalkboard',
-          permissions: ['admin'],
-        },
-      },
-      {
         path: 'product',
         name: 'Product',
         component: () => import('@/views/productProfile/product/index'),

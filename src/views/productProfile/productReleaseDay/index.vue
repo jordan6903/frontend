@@ -80,6 +80,7 @@
       <el-table-column show-overflow-tooltip type="selection" width="55" />
       <el-table-column label="代碼" prop="id" show-overflow-tooltip sortable width="100" />
       <el-table-column label="遊戲名稱" prop="p_Name" show-overflow-tooltip sortable width="200" />
+      <el-table-column label="名稱" prop="name" show-overflow-tooltip sortable width="200" />
       <el-table-column label="發售日" prop="sale_Date" show-overflow-tooltip />
       <el-table-column label="開放預售日" prop="presale_Date" show-overflow-tooltip />
       <el-table-column label="價格" prop="price" show-overflow-tooltip />

@@ -128,6 +128,8 @@
               this.dialogFormVisible = false
               this.$emit('fetch-data')
               this.form = this.$options.data().form
+
+              this.$emit('trigger-handleQuery')
             }
           } else {
             return false
