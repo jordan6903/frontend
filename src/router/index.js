@@ -420,6 +420,36 @@ export const asyncRoutes = [
     ],
   },
   {
+    path: '/view',
+    component: Layout,
+    redirect: 'noRedirect',
+    name: 'view',
+    alwaysShow: true,
+    meta: { title: '輸出', icon: 'box-open' },
+    children: [
+      {
+        path: 'export1',
+        name: 'Export1',
+        component: () => import('@/views/view/export1/index'),
+        meta: {
+          title: '輸出資料 export',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'export2',
+        name: 'Export2',
+        component: () => import('@/views/view/export2/index'),
+        meta: {
+          title: '輸出資料2 export2',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+    ],
+  },
+  {
     path: '/vab',
     component: Layout,
     redirect: 'noRedirect',

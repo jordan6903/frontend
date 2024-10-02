@@ -1,0 +1,15 @@
+var table = document.querySelector('#' + $scope.statSheet); // 抓DOM table
+
+// 不同分頁
+var sheet = XLSX2.utils.table_to_sheet(table);
+var sheet2 = XLSX2.utils.table_to_sheet(table);
+var sheet3 = XLSX2.utils.table_to_sheet(table);
+
+var tempArr = [sheet, sheet2, sheet3];
+var tempArrName = ["sheet1", "sheet2", "sheet3"];
+
+//匯出excel
+//openDownloadDialog(sheet2blob, 下載excel檔名)
+//sheet2blob(分頁陣列, 分頁名稱陣列)
+ 
+openDownloadDialog(sheet2blob(tempArr ,tempArrName), 'downloas.xlsx');
