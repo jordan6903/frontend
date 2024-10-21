@@ -447,6 +447,46 @@ export const asyncRoutes = [
           permissions: ['admin'],
         },
       },
+      {
+        path: 'export3',
+        name: 'Export3',
+        component: () => import('@/views/view/export3/index'),
+        meta: {
+          title: '輸出資料3 export3',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/export_set',
+    component: Layout,
+    redirect: 'noRedirect',
+    name: 'export_set',
+    alwaysShow: true,
+    meta: { title: '輸出', icon: 'box-open' },
+    children: [
+      {
+        path: 'batch',
+        name: 'Batch',
+        component: () => import('@/views/export_set/batch/index'),
+        meta: {
+          title: '輸出批次 batch',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'view',
+        name: 'View',
+        component: () => import('@/views/export_set/view/index'),
+        meta: {
+          title: '輸出 view',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
     ],
   },
   {
