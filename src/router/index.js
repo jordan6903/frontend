@@ -487,6 +487,26 @@ export const asyncRoutes = [
           permissions: ['admin'],
         },
       },
+      {
+        path: 'view_other',
+        name: 'View_other',
+        component: () => import('@/views/export_set/view_other/index'),
+        meta: {
+          title: '輸出其他 view_other',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'export_type',
+        name: 'Export_type',
+        component: () => import('@/views/export_set/export_type/index'),
+        meta: {
+          title: '輸出類型設定檔 export_type',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
     ],
   },
   {

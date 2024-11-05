@@ -13,6 +13,11 @@
           <el-form-item label="啟用">
             <el-switch v-model="queryForm.use_yn_set" />
           </el-form-item>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <el-form-item label="批次複製">
+            <el-button native-type="submit" type="danger" @click="handleCopy">複製公司</el-button>
+            <el-button native-type="submit" type="danger" @click="handleCopyOther">複製其他</el-button>
+          </el-form-item>
         </el-form>
       </vab-query-form-left-panel>
     </vab-query-form>
@@ -50,17 +55,23 @@
       </el-table-column>
     </el-table>
     <table-edit ref="edit" />
+    <export-copy ref="exportCopy" @trigger-handleQuery="handleQuery" />
+    <export-copy-other ref="exportCopyOther" @trigger-handleQuery="handleQuery" />
   </div>
 </template>
 
 <script>
   import { doDelete, getList } from '@/api/table'
   import TableEdit from './components/TableEdit'
+  import ExportCopy from './components/ExportCopy'
+  import ExportCopyOther from './components/ExportCopyOther'
 
   export default {
     name: 'Batch',
     components: {
       TableEdit,
+      ExportCopy,
+      ExportCopyOther,
     },
     filters: {},
     data() {
@@ -115,6 +126,14 @@
       handleEdit(row) {
         console.log('===methods handleEdit')
         this.$refs['edit'].showEdit(row)
+      },
+      handleCopy() {
+        console.log('handleCopy')
+        this.$refs['exportCopy'].showEdit()
+      },
+      handleCopyOther() {
+        console.log('handleCopyOther')
+        this.$refs['exportCopyOther'].showEdit()
       },
       handleDelete(row) {
         console.log('===methods handleDelete')

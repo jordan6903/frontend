@@ -4,13 +4,14 @@
       <vab-query-form-left-panel>
         <el-form ref="form" :inline="true" :model="queryForm" @submit.native.prevent>
           <el-form-item>
-            <el-input v-model="queryForm.searchword2" placeholder="輸入公司名稱或id..." />
-          </el-form-item>
-          <el-form-item>
-            <el-input v-model="queryForm.searchword" placeholder="輸入遊戲名稱或id..." />
+            <el-input v-model="queryForm.searchword" placeholder="輸入關鍵字..." />
           </el-form-item>
           <el-form-item>
             <el-button icon="el-icon-search" native-type="submit" type="primary" @click="handleQuery">查詢</el-button>
+          </el-form-item>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <el-form-item label="啟用">
+            <el-switch v-model="queryForm.use_yn_set" />
           </el-form-item>
         </el-form>
       </vab-query-form-left-panel>
@@ -19,7 +20,6 @@
     <vab-query-form>
       <vab-query-form-left-panel>
         <el-button icon="el-icon-plus" type="primary" @click="handleAdd">新增</el-button>
-        <el-button icon="el-icon-delete" type="danger" @click="handleDelete">删除</el-button>
       </vab-query-form-left-panel>
     </vab-query-form>
 
@@ -33,10 +33,16 @@
       @sort-change="tableSortChange"
     >
       <el-table-column show-overflow-tooltip type="selection" width="55" />
-      <el-table-column label="公司名稱" prop="company_name" show-overflow-tooltip sortable width="120" />
-      <el-table-column label="代碼" prop="p_id" show-overflow-tooltip sortable width="120" />
-      <el-table-column label="遊戲名稱" prop="name" show-overflow-tooltip />
-      <el-table-column label="中文名稱" prop="c_Name" show-overflow-tooltip width="150" />
+      <el-table-column label="代碼" prop="id" show-overflow-tooltip sortable width="95" />
+      <el-table-column label="名稱" prop="name" show-overflow-tooltip />
+      <el-table-column label="敘述" prop="content" show-overflow-tooltip />
+      <el-table-column label="啟用" prop="use_yn" show-overflow-tooltip>
+        <template #default="{ row }">
+          <vab-icon v-show="row.use_yn" :icon="['fas', 'check']" />
+          <vab-icon v-show="!row.use_yn" :icon="['fas', 'times']" />
+        </template>
+      </el-table-column>
+      <el-table-column label="更新時間" prop="upd_date" show-overflow-tooltip sortable width="200" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
           <el-button type="text" @click="handleEdit(row)">編輯</el-button>
@@ -44,15 +50,6 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination
-      :background="background"
-      :current-page="queryForm.pageNo"
-      :layout="layout"
-      :page-size="queryForm.pageSize"
-      :total="total"
-      @current-change="handleCurrentChange"
-      @size-change="handleSizeChange"
-    />
     <table-edit ref="edit" @trigger-handleQuery="handleQuery" />
   </div>
 </template>
@@ -62,32 +59,19 @@
   import TableEdit from './components/TableEdit'
 
   export default {
-    name: 'Product',
+    name: 'ExportType',
     components: {
       TableEdit,
     },
-    filters: {
-      statusFilter(status) {
-        const statusMap = {
-          published: 'success',
-          draft: 'gray',
-          deleted: 'danger',
-        }
-        return statusMap[status]
-      },
-    },
+    filters: {},
     data() {
       return {
-        url: 'http://localhost:5252/api/product',
-        url2: 'http://localhost:5252/api/company',
+        url: 'http://localhost:5252/api/export_type',
         return_msg: '',
         return_success: '',
         imgShow: true,
         list: [],
-        list_type: [],
-        imageList: [],
         listLoading: true,
-        layout: 'total, sizes, prev, pager, next, jumper',
         total: 0,
         background: true,
         selectRows: '',
@@ -96,7 +80,7 @@
           pageNo: 1,
           pageSize: 20,
           searchword: '',
-          searchword2: '',
+          use_yn_set: true,
         },
         timeOutID: null,
       }
@@ -127,19 +111,21 @@
       },
       handleAdd() {
         console.log('===methods handleAdd')
-        this.$refs['edit'].showEdit(null, this.list_type)
+        this.$refs['edit'].showEdit(null)
       },
       handleEdit(row) {
         console.log('===methods handleEdit')
-        this.$refs['edit'].showEdit(row, this.list_type)
+        this.$refs['edit'].showEdit(row)
       },
       handleDelete(row) {
         console.log('===methods handleDelete')
-        console.log(row.p_id)
-        if (row.p_id) {
+        console.log(row.id)
+        if (row.id) {
           this.$baseConfirm('你確定要刪除當前項嗎?', null, async () => {
+            //const { msg } = await doDelete({ ids: row.id })
+
             let ls_url = this.url
-            ls_url += `/${row.p_id}`
+            ls_url += `/${row.id}`
 
             await axios
               .delete(ls_url, {})
@@ -190,19 +176,21 @@
         console.log('===methods fetchData')
         this.listLoading = true
 
-        let ls_url = `${this.url}/limit?`
+        let ls_url = `${this.url}?`
+
+        if (this.queryForm.use_yn_set) {
+          ls_url += 'UseYN=Y&'
+        } else {
+          ls_url += 'UseYN=N&'
+        }
 
         if (this.queryForm.searchword != '') {
           ls_url += `searchword=${this.queryForm.searchword}` + '&'
         }
 
-        if (this.queryForm.searchword2 != '') {
-          ls_url += `searchword2=${this.queryForm.searchword2}` + '&'
-        }
-
         ls_url = ls_url.substring(0, ls_url.length - 1)
 
-        //遊戲主資料
+        //主資料
         await axios
           .get(ls_url)
           .then((response) => (this.list = response.data))
@@ -210,17 +198,6 @@
             console.log(error)
           })
 
-        let ls_url2 = `${this.url2}`
-
-        //公司
-        await axios
-          .get(ls_url2)
-          .then((response) => (this.list_type = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-
-        this.total = this.list.length
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
         }, 500)

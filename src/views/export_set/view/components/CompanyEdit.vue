@@ -13,26 +13,21 @@
           <input v-model="left_search" autocomplete="off" class="input_search" placeholder="請輸入代號或公司名稱" type="text" />
           <span class="input_search_icon"><i class="el-input__icon el-icon-search"></i></span>
         </div>
-        <div class="div_item_group">
-          <div
+        <ul class="ul_item_group_drag">
+          <li
             v-for="(company, index) in filterList"
             :key="company.id"
-            class="div_item"
+            class="li_item"
             draggable="true"
             @dragend="dragEnd"
-            @dragenter="showDrop($event, index)"
-            @dragleave="hideDrop($event, index)"
-            @dragover="allowDrop($event)"
+            @dragover="overDrop($event)"
             @dragstart="dragStart($event, index)"
             @drop="drop($event, index)"
           >
-            <!--<div class="drop_tmpdiv" v-show="company.dragShow"><i class="el-icon-plus"></i></div>-->
-            <div class="drop_list">
-              <input v-model="left_select" class="checkbox" name="list" type="checkbox" :value="company.id" />
-              <label :for="company.id">{{ company.sort }} - {{ company.c_Name }}</label>
-            </div>
-          </div>
-        </div>
+            <input v-model="left_select" class="checkbox" name="list" type="checkbox" :value="company.id" />
+            <label :for="company.id">{{ company.sort }} - {{ company.c_Name }}</label>
+          </li>
+        </ul>
       </div>
 
       <div class="div_middle">
@@ -68,12 +63,12 @@
           <input v-model="right_search" autocomplete="off" class="input_search" placeholder="請輸入代號或公司名稱" type="text" />
           <span class="input_search_icon"><i class="el-input__icon el-icon-search"></i></span>
         </div>
-        <div class="div_item_group">
-          <div v-for="company in filterItem" :key="company.id" class="div_item">
+        <ul class="ul_item_group">
+          <li v-for="company in filterItem" :key="company.id" class="li_item">
             <input v-model="right_select" class="checkbox" name="list" type="checkbox" :value="company.c_id" />
             <label :for="company.c_id">{{ company.name }}</label>
-          </div>
-        </div>
+          </li>
+        </ul>
       </div>
     </div>
 
@@ -232,6 +227,7 @@
 
         this.generateData()
         //this.setPdata();
+        //this.enableDragSort('ul_item_group_drag');
 
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
@@ -519,54 +515,78 @@
       },
 
       //拖曳相關--str---↓↓--
-      allowDrop(e, index) {
+      overDrop(e, index) {
         e.preventDefault() //取消默認行為
       },
-      hideDrop(e, index) {
-        // 確保只有當滑出該元素本身時才觸發
-        if (!e.currentTarget.contains(e.relatedTarget)) {
-          this.list[index]['dragShow'] = false //離開後恢復原狀
-        }
-      },
-      showDrop(e, index) {
-        if (this.drag_startindex != index) {
-          this.list[index]['dragShow'] = true //離開後恢復原狀
-        }
-      },
+      // leaveDrop(e, index) {
+      //   console.log("leaveDrop");
+      // },
+      // enterDrop(e, index) {
+      //   console.log("enterDrop");
+      // },
       dragStart(e, index) {
         //拖曳開始
         this.drag_startindex = index
-        let tar = e.target
         e.dataTransfer.setData('Text', index)
-        if (tar.tagName.toLowerCase() == 'li') {
-          // console.log('drag start')
-          // console.log('drag Index: ' + index)
-        }
       },
       drop(e, index) {
         //放置
-        this.allowDrop(e)
+        this.overDrop(e)
         let arr = this.list.concat([]),
           dragIndex = e.dataTransfer.getData('Text')
         let temp = arr.splice(dragIndex, 1)
         arr.splice(index, 0, temp[0])
         this.list = arr
 
+        // e.target.classList.remove('drag-sort-active');
+
         this.list_sort()
       },
       dragEnd() {
         //放置結束
         console.log('dragEnd')
-        for (let i = 0; i < this.list.length; i++) {
-          this.list[i]['dragShow'] = false
-        }
       },
       //拖曳相關--end---↑↑--
+
+      // handleDrag(e,index) {
+      //   console.log("handleDrag index="+index);
+      //   e.preventDefault() //取消默認行為
+      //   const selectedItem = e.target,
+      //         list = selectedItem.parentNode,
+      //         x = event.clientX,
+      //         y = event.clientY;
+
+      //   this.drag_startindex = index;
+      //   e.dataTransfer.setData('Text', index);
+
+      //   selectedItem.classList.add('drag-sort-active');
+      //   let swapItem = document.elementFromPoint(x, y) === null ? selectedItem : document.elementFromPoint(x, y);
+
+      //   if (list === swapItem.parentNode) {
+      //     swapItem = swapItem !== selectedItem.nextSibling ? swapItem : swapItem.nextSibling;
+      //     list.insertBefore(selectedItem, swapItem);
+      //   }
+      // },
+      // handleDrop(e,index) {
+      //   console.log("handleDrop index="+index);
+      //   e.target.classList.remove('drag-sort-active');
+      //   let arr = this.list.concat([]),
+      //     dragIndex = e.dataTransfer.getData('Text')
+      //   let temp = arr.splice(dragIndex, 1)
+      //   arr.splice(index, 0, temp[0])
+      //   this.list = arr
+
+      //   this.list_sort()
+      // }
     },
   }
 </script>
 
 <style>
+  li {
+    list-style: none;
+  }
+
   .div_out {
     display: flex;
     flex-direction: row;
@@ -616,12 +636,15 @@
     position: relative;
   }
 
-  .div_item_group {
+  .ul_item_group,
+  .ul_item_group_drag {
     overflow: auto;
     height: 420px;
+    padding: 5px;
+    margin: 0px;
   }
 
-  .div_item {
+  .li_item {
     padding-top: 5px;
     padding-left: 10px;
     padding-bottom: 5px;
@@ -668,5 +691,11 @@
     height: 20px;
     display: flex;
     align-items: center;
+  }
+
+  li.drag-sort-active {
+    background: transparent;
+    color: transparent;
+    border: 1px solid #4ca1af;
   }
 </style>

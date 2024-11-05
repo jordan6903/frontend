@@ -37,7 +37,7 @@
 
     <vab-query-form>
       <vab-query-form-left-panel>
-        <el-button icon="el-icon-plus" type="primary" @click="sortCompany">公司排序</el-button>
+        <el-button icon="el-icon-plus" type="primary" @click="newOther">新增其他</el-button>
       </vab-query-form-left-panel>
     </vab-query-form>
 
@@ -57,9 +57,7 @@
             <el-table-column label="子分類" prop="name" show-overflow-tooltip width="100" />
             <el-table-column label="遊戲">
               <template #default="{ row }">
-                <div v-for="data in row.p_data" :key="data.id">
-                  {{ data.p_Name }}
-                </div>
+                <div v-for="data in row.p_data" :key="data.id">[{{ data.c_Name }}] {{ data.p_Name }}</div>
               </template>
             </el-table-column>
             <el-table-column label="啟用" prop="use_yn" show-overflow-tooltip width="50">
@@ -79,13 +77,7 @@
         </template>
       </el-table-column>
       <el-table-column label="排序" prop="sort" show-overflow-tooltip sortable width="95px" />
-      <el-table-column label="公司名稱" prop="c_Name" show-overflow-tooltip sortable />
-      <el-table-column label="檢查重複" prop="repeat_chk" show-overflow-tooltip>
-        <template #default="{ row }">
-          <vab-icon v-show="row.repeat_chk" :icon="['fas', 'check']" style="color: green" />
-          <vab-icon v-show="!row.repeat_chk" :icon="['fas', 'times']" style="color: red" />
-        </template>
-      </el-table-column>
+      <el-table-column label="其他名稱" prop="name" show-overflow-tooltip sortable />
       <el-table-column label="編排完畢" prop="count_chk" show-overflow-tooltip sortable>
         <template #default="{ row }">
           <vab-icon v-show="row.count_chk" :icon="['fas', 'check']" style="color: green" />
@@ -97,7 +89,8 @@
       <el-table-column label="所有遊戲總數" prop="count_all" show-overflow-tooltip />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
-          <el-button type="text" @click="sortProduct(row.id)">編輯</el-button>
+          <el-button type="text" @click="modifyOther(row)">編輯</el-button>
+          <el-button type="text" @click="deleteOther(row)">刪除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -115,7 +108,7 @@
   import ExportView from './components/ExportView'
 
   export default {
-    name: 'View',
+    name: 'ViewOther',
     components: {
       CompanyEdit,
       ProductEdit,
@@ -124,27 +117,19 @@
     filters: {},
     data() {
       return {
-        url: 'http://localhost:5252/api/export_set_company/view',
-        url2: 'http://localhost:5252/api/export_set_company/viewp',
-        url3: 'http://localhost:5252/api/export_set_company/viewcount',
-        url4: 'http://localhost:5252/api/export_set_product',
-        url5: 'http://localhost:5252/api/export_set_other',
+        url: 'http://localhost:5252/api/export_set_other/view',
+        url2: 'http://localhost:5252/api/export_set_other/viewp',
+        url3: 'http://localhost:5252/api/export_set_other',
         url_batch: 'http://localhost:5252/api/export_set_batch',
         url_type: 'http://localhost:5252/api/export_type',
-
         return_msg: '',
         return_success: '',
         imgShow: true,
-
         list: [],
         list_product: [],
         list_batch: [],
         list_type: [],
         list_count: [],
-
-        esp: [], //Export_set_Product資料
-        esop: [], //Export_set_Other_Product資料
-
         listLoading: true,
         total: 0,
         background: true,
@@ -276,7 +261,6 @@
 
         let ls_url = `${this.url}/${ls_batch}?`
         let ls_url2 = `${this.url2}/${ls_batch}?`
-        let ls_url3 = `${this.url3}/${ls_batch}`
         let url_type = `${this.url_type}?UseYN=Y`
         console.log(ls_url)
         console.log(ls_url2)
@@ -318,17 +302,8 @@
             console.log(error)
           })
 
-        //遊戲計數
-        await axios
-          .get(ls_url3)
-          .then((response) => (this.list_count = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-
         this.setPdata()
-        this.setPcount()
-        this.setRepeatChk()
+        //this.setPcount();
 
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
@@ -348,7 +323,7 @@
             //子分類跟遊戲比較
             for (let k = 0; k < this.list_product.length; k++) {
               //匹配則放入子分類遊戲裡
-              if (this.list[i].series_data[j]['id'] == this.list_product[k]['espS_id']) {
+              if (this.list[i].series_data[j]['id'] == this.list_product[k]['esos_id']) {
                 ls_tmparray.push(this.list_product[k])
               }
             }
@@ -377,64 +352,67 @@
         }
       },
 
-      async setRepeatChk(esc_id) {
-        console.log('setRepeatChk')
-
-        let ls_url4 = `${this.url4}/getbybatch?id=${this.queryForm.batch}`
-        console.log(ls_url4)
-
-        //ESP資料
-        await axios
-          .get(ls_url4)
-          .then((response) => (this.esp = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-
-        let ls_url5 = `${this.url5}/viewp/${this.queryForm.batch}`
-        console.log(ls_url5)
-
-        //ESOP資料
-        await axios
-          .get(ls_url5)
-          .then((response) => (this.esop = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-
-        let ls_tmparray = []
-
-        //相互比對, 抓出重疊的遊戲
-        for (let i = 0; i < this.esp.length; i++) {
-          for (let j = 0; j < this.esop.length; j++) {
-            if (this.esp[i]['p_id'] == this.esop[j]['p_id']) {
-              console.log(this.esp[i]['p_id'])
-              console.log(this.esop[j]['p_id'])
-              ls_tmparray.push(this.esp[i]['esc_id'])
-              break
-            }
-          }
-        }
-
-        console.log(ls_tmparray)
-        console.log(this.list)
-
-        //標記含有重疊遊戲的公司
-        for (let i = 0; i < this.list.length; i++) {
-          for (let j = 0; j < ls_tmparray.length; j++) {
-            if (this.list[i]['id'] == ls_tmparray[j]) {
-              this.list[i]['repeat_chk'] = false
-            }
-          }
-        }
-      },
-
-      async sortCompany() {
+      async newOther() {
         console.log('sortCompany')
         if (this.queryForm.batch === undefined || this.queryForm.batch === null || this.queryForm.batch === '') {
           alert('請先選擇批次')
         } else {
-          this.$refs['cedit'].showEdit(this.queryForm.batch)
+          this.$refs['cedit'].showEdit(this.queryForm.batch, null)
+        }
+      },
+
+      async modifyOther(row) {
+        console.log('sortCompany')
+        if (this.queryForm.batch === undefined || this.queryForm.batch === null || this.queryForm.batch === '') {
+          alert('請先選擇批次')
+        } else {
+          this.$refs['cedit'].showEdit(this.queryForm.batch, row)
+        }
+      },
+
+      async deleteOther(row) {
+        console.log('deleteOther')
+        console.log(row)
+        if (row.id) {
+          this.$baseConfirm('你確定要刪除當前項嗎?', null, async () => {
+            //const { msg } = await doDelete({ ids: row.id })
+
+            let ls_url = this.url3
+            ls_url += `/${row.id}`
+
+            await axios
+              .delete(ls_url, {})
+              .then((response) => (this.return_msg = response.data.message))
+              .catch(function (error) {
+                // 请求失败处理
+                console.log(error)
+              })
+
+            //拆解
+            let msg_array = this.return_msg.split('#')
+            this.return_success = msg_array[0]
+            this.return_msg = msg_array[1]
+
+            this.$baseMessage(this.return_msg, 'success')
+
+            //成功就關閉視窗
+            if (this.return_success == 'Y') {
+              this.fetchData()
+            }
+          })
+        } else {
+          if (this.selectRows.length > 0) {
+            this.$baseMessage('尚未開放此功能', 'error')
+            // const ids = this.selectRows.map((item) => item.id).join()
+            // this.$baseConfirm('你确定要删除选中项吗', null, async () => {
+            //   const { msg } = await doDelete({ ids: ids })
+            //   this.$baseMessage(msg, 'success')
+            //   this.fetchData()
+            // })
+          } else {
+            this.$baseMessage('未選中任何一行', 'error')
+            return false
+          }
         }
       },
 

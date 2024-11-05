@@ -16,7 +16,7 @@
           <el-tag class="tagbtn" effect="dark" @click="delete_series">刪除</el-tag>
         </div>
         <div class="div_item_group2">
-          <div v-for="(series, sindex) in slist" :key="series.esps_Id" class="div_item2">
+          <div v-for="(series, sindex) in slist" :key="series.esos_Id" class="div_item2">
             <div
               class="div_item_left"
               draggable="true"
@@ -31,16 +31,16 @@
                 class="checkbox"
                 name="list"
                 type="radio"
-                :value="series.esps_Id"
+                :value="series.esos_Id"
                 @change="setSeriesName"
               />
-              <label :for="series.esps_Id">{{ series.sort }} - {{ series.name }}</label>
+              <label :for="series.esos_Id">{{ series.sort }} - {{ series.name }}</label>
             </div>
 
             <div
               v-for="(product, pindex) in series.product_data"
               v-show="esc_show"
-              :key="product.esp_id"
+              :key="product.esop_id"
               class="div_product_data"
               draggable="true"
               @dragend="dragEnd"
@@ -48,9 +48,9 @@
               @dragstart="dragStart($event, pindex, 'Product', sindex)"
               @drop="ProductDrop($event, pindex, 'Product', sindex)"
             >
-              <input v-model="left_select_product" class="checkbox" name="list" type="checkbox" :value="product.esp_id" />
-              <label :for="product.esp_Id" :title="product.p_Name">
-                <span v-if="product.eso_chk" style="color: red">(其他已有)</span>
+              <input v-model="left_select_product" class="checkbox" name="list" type="checkbox" :value="product.esop_id" />
+              <label :for="product.esop_id" :title="product.p_Name">
+                <span v-if="product.esp_chk" style="color: red">(一般已有)</span>
                 {{ product.sort }} - {{ product.p_Name }}
               </label>
             </div>
@@ -77,17 +77,7 @@
             </button>
           </div>
         </div>
-        <!--
-        <div class="arrow" v-show="insert_row_show">
-          <button type="button" class="el-button el-button--primary" @click="list_sort_to">
-            <span>插入</span>
-          </button>
-        </div>
-      
-        <div v-show="insert_row_show">
-          <el-input type="number" autocomplete="off" maxlength="5" v-model.trim="insert_row" oninput="value=value.replace(/[^0-9]/g,'')"/>
-        </div>
-      --></div>
+      </div>
 
       <div class="div_float2">
         <div class="div_title">
@@ -104,21 +94,11 @@
         <div class="div_item_group2">
           <div v-for="product in filterItem" :key="product.p_id" class="div_item_right">
             <input v-model="right_select" class="checkbox" name="list" type="checkbox" :value="product.p_id" />
-            <label :for="product.p_id" :title="product.name">
-              <span v-if="product.eso_chk" style="color: red">(其他已有)</span>
-              {{ product.name }}
-            </label>
+            <label :for="product.p_id" :title="product.name">{{ product.name }}</label>
           </div>
         </div>
       </div>
     </div>
-
-    <!--
-    <div slot="footer" class="dialog-footer">
-      <el-button @click="close">取 消</el-button>
-      <el-button type="primary" @click="save">確 定</el-button>
-    </div>
-    -->
   </el-dialog>
 </template>
 
@@ -130,16 +110,16 @@
     data() {
       return {
         export_batch: 0,
-        esc_id: 0,
-        url: 'http://localhost:5252/api/export_set_company/getbyid',
-        url2: 'http://localhost:5252/api/export_set_product_series',
-        url3: 'http://localhost:5252/api/product/getbycompanytt',
-        url4: 'http://localhost:5252/api/export_set_product',
-        url5: 'http://localhost:5252/api/export_set_other',
+        eso_id: 0,
+        url: 'http://localhost:5252/api/export_set_other/getbyid',
+        url2: 'http://localhost:5252/api/export_set_other_series',
+        url3: 'http://localhost:5252/api/product/getforother',
+        url4: 'http://localhost:5252/api/export_set_other_product',
+        url5: 'http://localhost:5252/api/export_set_product',
 
-        esc: {}, //Export_set_Company資料
+        eso: {}, //Export_set_Company資料
+        esop: [], //Export_set_Product資料
         esp: [], //Export_set_Product資料
-        esop: [], //Export_set_Other_Product資料
 
         //右側選單
         product: [], //遊戲 原始資料(不動)
@@ -163,9 +143,7 @@
 
         params: '',
         return_msg: '',
-        return_data: '',
         return_success: '',
-        return_newseriesid: 0,
 
         //複製用
         form: {
@@ -222,7 +200,7 @@
         console.log(id)
         console.log(batch)
         this.title = '遊戲排序'
-        this.esc_id = id
+        this.eso_id = id
         this.export_batch = batch
         this.dialogFormVisible = true
 
@@ -238,7 +216,7 @@
         console.log(this.left_select_series)
 
         for (let i = 0; i < this.slist.length; i++) {
-          if (this.left_select_series == this.slist[i]['esps_Id']) {
+          if (this.left_select_series == this.slist[i]['esos_Id']) {
             ls_tmpname = this.slist[i]['name']
             break
           }
@@ -259,16 +237,16 @@
 
         //右邊選單 篩選
         for (let i = 0; i < this.product.length; i++) {
-          for (let j = 0; j < this.esp.length; j++) {
-            if (this.product[i]['p_id'] == this.esp[j]['p_id']) {
+          for (let j = 0; j < this.esop.length; j++) {
+            if (this.product[i]['p_id'] == this.esop[j]['p_id']) {
               lb_chk = true //標記有重複
             }
           }
 
-          //若其他列表已有, 則標記起來
-          for (let j = 0; j < this.esop.length; j++) {
-            if (this.product[i]['p_id'] == this.esop[j]['p_id']) {
-              this.product[i]['eso_chk'] = true
+          //若一般列表已有, 則標記起來
+          for (let j = 0; j < this.esp.length; j++) {
+            if (this.product[i]['p_id'] == this.esp[j]['p_id']) {
+              lb_chk = true //標記已有
             }
           }
 
@@ -276,20 +254,23 @@
           lb_chk = false //重置
         }
 
-        //若其他列表已有, 則標記起來
+        console.log(this.slist)
+        console.log(this.esop)
+
+        //若一般列表已有, 則標記起來
         for (let i = 0; i < this.esp.length; i++) {
           for (let j = 0; j < this.esop.length; j++) {
             if (this.esp[i]['p_id'] == this.esop[j]['p_id']) {
-              this.esp[i]['eso_chk'] = true
+              this.esop[j]['esp_chk'] = true
             }
           }
         }
 
-        //左邊選單 把esp塞進去
+        //左邊選單 把esop塞進去
         for (let i = 0; i < this.slist.length; i++) {
-          for (let j = 0; j < this.esp.length; j++) {
-            if (this.slist[i]['esps_Id'] == this.esp[j]['esps_id']) {
-              ls_tmparray.push(this.esp[j])
+          for (let j = 0; j < this.esop.length; j++) {
+            if (this.slist[i]['esos_Id'] == this.esop[j]['esos_id']) {
+              ls_tmparray.push(this.esop[j])
             }
           }
           this.slist[i]['product_data'] = ls_tmparray
@@ -299,18 +280,18 @@
       async fetchData() {
         console.log('fetchData')
 
-        let esc_id = this.esc_id
+        let eso_id = this.eso_id
 
-        let ls_url = `${this.url}/${esc_id}`
-        let ls_url2 = `${this.url2}/${esc_id}`
+        let ls_url = `${this.url}/${eso_id}`
+        let ls_url2 = `${this.url2}/${eso_id}`
 
         console.log(ls_url)
         console.log(ls_url2)
 
-        //ESC資料
+        //ESO資料
         await axios
           .get(ls_url)
-          .then((response) => (this.esc = response.data[0]))
+          .then((response) => (this.eso = response.data[0]))
           .catch(function (error) {
             console.log(error)
           })
@@ -323,10 +304,10 @@
             console.log(error)
           })
 
-        let ls_url3 = `${this.url3}/${this.esc.c_id}`
+        let ls_url3 = `${this.url3}`
         console.log(ls_url3)
 
-        //公司旗下的遊戲列表
+        //抓出所有跟漢化相關的遊戲
         await axios
           .get(ls_url3)
           .then((response) => (this.product = response.data))
@@ -334,24 +315,24 @@
             console.log(error)
           })
 
-        let ls_url4 = `${this.url4}?id=${esc_id}`
+        let ls_url4 = `${this.url4}?id=${eso_id}`
         console.log(ls_url4)
 
-        //ESP資料
+        //ESOP資料
         await axios
           .get(ls_url4)
-          .then((response) => (this.esp = response.data))
+          .then((response) => (this.esop = response.data))
           .catch(function (error) {
             console.log(error)
           })
 
-        let ls_url5 = `${this.url5}/viewp/${this.export_batch}`
+        let ls_url5 = `${this.url5}/getbybatch?id=${this.export_batch}`
         console.log(ls_url5)
 
-        //ESOP資料
+        //ESP資料
         await axios
           .get(ls_url5)
-          .then((response) => (this.esop = response.data))
+          .then((response) => (this.esp = response.data))
           .catch(function (error) {
             console.log(error)
           })
@@ -362,6 +343,9 @@
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
         }, 500)
+      },
+      async item_select(index) {
+        console.log(`item_select index:${index}`)
       },
       clear() {
         console.log('clear')
@@ -439,13 +423,13 @@
       list_sort() {
         console.log('list_sort')
         for (let i = 0; i < this.slist.length; i++) {
-          let esps_id = this.slist[i]['esps_Id']
+          let esos_id = this.slist[i]['esos_Id']
           this.slist[i].sort = i + 1
 
           if (this.slist[i]['product_data'].length > 0) {
             for (let j = 0; j < this.slist[i]['product_data'].length; j++) {
               this.slist[i]['product_data'][j].sort = j + 1
-              this.slist[i]['product_data'][j]['esps_id'] = esps_id
+              this.slist[i]['product_data'][j]['esos_id'] = esos_id
             }
           }
         }
@@ -454,14 +438,6 @@
         setTimeout(() => {
           this.fetchData()
         }, 500)
-      },
-
-      //純排序不存檔
-      list_sort_sub() {
-        console.log('list_sort_sub')
-        for (let i = 0; i < this.slist.length; i++) {
-          this.slist[i].sort = i + 1
-        }
       },
 
       //針對選擇的陣列做排序
@@ -488,109 +464,12 @@
         this.left_select_product = array1
       },
 
-      //騰出空間, 從start開始空出arg的空間
-      list_make_space(start, arg) {
-        console.log('list_make_space')
-        for (let i = start - 1; i < this.slist.length; i++) {
-          this.slist[i].sort = parseInt(i) + 1 + parseInt(arg)
-        }
-        this.save()
-        this.fetchData()
-      },
-
-      //左側選單 根據輸入值移到指定位置
-      list_sort_to() {
-        console.log('list_sort_to')
-        let li_arg = this.left_select_product.length //移動的總列數
-
-        if (li_arg == 0) {
-          alert('請選擇項目')
-        } else if (this.insert_row == 0) {
-          alert('請選擇插入值')
-        } else {
-          console.log('start')
-          let li_select_index = 0
-          let lb_break = false
-
-          for (let i = 0; i < this.slist.length; i++) {
-            for (let j = 0; j < this.slist[i]['product_data'].length; j++) {
-              if (this.slist[i]['product_data'][j]['esc_id'] == this.left_select_product[0]) {
-                li_select_index = i
-                lb_break = true
-                break
-              }
-            }
-            if (lb_break) {
-              break
-            }
-          }
-
-          this.select_sort(li_select_index) //先做排序
-
-          let li_insert_row = this.insert_row - 1
-
-          console.log(this.left_select_series)
-
-          let ls_tmplist = [] //暫存陣列
-          let li_firstsort //勾選的第一個的index
-          let li_lastsort //勾選的最後一個的index
-
-          //抓出範圍index
-          for (let i = this.slist.length - 1; i > -1; i--) {
-            //順便記錄
-            if (this.slist[i]['id'] == this.left_select_series[0]) {
-              li_firstsort = i
-            }
-
-            if (this.slist[i]['id'] == this.left_select_series[this.left_select_series.length - 1]) {
-              li_lastsort = i
-            }
-          }
-
-          console.log(`li_firstsort: ${li_firstsort}`)
-          console.log(`li_lastsort: ${li_lastsort}`)
-          console.log(this.slist)
-
-          //輸入值在指定範圍內
-          if (li_insert_row >= li_firstsort && li_insert_row <= li_lastsort) {
-            alert('插入值在選定範圍內, 請重新輸入')
-          }
-          //往上移
-          else if (li_insert_row < li_firstsort) {
-            //從後面開始抓, 先插入前面再刪掉後面
-            for (let i = this.slist.length - 1; i > -1; i--) {
-              for (let j = li_arg - 1; j > -1; j--) {
-                if (this.slist[i]['id'] == this.left_select_series[j]) {
-                  this.slist.splice(li_insert_row, 0, this.slist[i])
-                  this.slist.splice(i + 1, 1) //刪除該元素
-                }
-              }
-            }
-          }
-          //往下移
-          else if (li_insert_row > li_lastsort) {
-            //從前面開始抓, 先插入後面再刪掉前面
-            for (let i = 0; i < this.list.length; i++) {
-              for (let j = 0; j < li_arg; j++) {
-                if (this.slist[i]['id'] == this.left_select_series[j]) {
-                  this.slist.splice(li_insert_row, 0, this.slist[i])
-                  this.slist.splice(i, 1) //刪除該元素
-                }
-              }
-            }
-          }
-          this.list_sort()
-          //this.save();
-          //this.fetchData();
-        }
-      },
-
       //新增子分類
       async insert_series() {
         console.log('insert_series')
 
         let newarray = {
-          ESC_id: this.esc_id,
+          eso_id: this.eso_id,
           Name: this.series_input_name,
           Use_yn: true,
           Sort: this.slist.length + 1,
@@ -631,18 +510,18 @@
         }
 
         let li_sort = 0,
-          esps_id = 0
+          esos_Id = 0
         let ls_url2 = `${this.url2}/${this.left_select_series}`
 
         for (let i = 0; i < this.slist.length; i++) {
-          if (this.left_select_series == this.slist[i]['esps_Id']) {
+          if (this.left_select_series == this.slist[i]['esos_Id']) {
             li_sort = this.slist[i]['sort']
             break
           }
         }
 
         let newarray = {
-          ESC_id: this.esc_id,
+          eso_id: this.eso_id,
           Name: this.series_input_name,
           Use_yn: true,
           Sort: li_sort,
@@ -682,28 +561,6 @@
           return
         }
 
-        for (let i = 0; i < this.slist.length; i++) {
-          if (this.slist[i]['esps_Id'] == this.left_select_series) {
-            if (this.slist[i]['product_data'].length > 0) {
-              this.$baseConfirm(
-                '尚有遊戲在子分類裡, 是否要繼續?',
-                null,
-                () => {
-                  console.log('是')
-                  this.delete_series_submit()
-                },
-                () => {
-                  console.log('否')
-                  return false
-                }
-              )
-            }
-          }
-        }
-      },
-
-      async delete_series_submit() {
-        console.log('delete_series_submit')
         let ls_url2 = `${this.url2}/${this.left_select_series}`
 
         await axios
@@ -744,15 +601,15 @@
 
           for (let i = 0; i < this.slist.length; i++) {
             this.update_form.push({
-              esps_Id: this.slist[i]['esps_Id'],
+              esos_Id: this.slist[i]['esos_Id'],
               sort: this.slist[i]['sort'],
             })
 
             if (this.slist[i]['product_data'].length > 0) {
               for (let j = 0; j < this.slist[i]['product_data'].length; j++) {
                 newarray.push({
-                  esps_id: this.slist[i]['product_data'][j]['esps_id'],
-                  esp_id: this.slist[i]['product_data'][j]['esp_id'],
+                  esos_id: this.slist[i]['product_data'][j]['esos_id'],
+                  esop_id: this.slist[i]['product_data'][j]['esop_id'],
                   sort: this.slist[i]['product_data'][j]['sort'],
                 })
               }
@@ -800,87 +657,60 @@
 
         if (this.right_select.length == 0) {
           alert('請先勾選右方遊戲')
-          return false
-        }
-
-        if (this.slist.length > 0 && this.left_select_series.length == 0) {
+        } else if (this.left_select_series.length == 0) {
           alert('請先選擇子分類')
-          return false
-        }
+        } else {
+          let newarray = []
+          let li_row = 0
 
-        if (this.slist.length == 0) {
-          console.log('自動新增一筆空白子分類')
+          for (let i = 0; i < this.slist.length; i++) {
+            if (this.slist[i]['esos_Id'] == this.left_select_series) {
+              li_row = this.slist[i]['product_data'].length + 1
+            }
+          }
 
-          let newarray = {
-            ESC_id: this.esc_id,
-            Name: '',
-            Use_yn: true,
-            Sort: 1,
+          for (let i = 0; i < this.item.length; i++) {
+            for (let j = 0; j < this.right_select.length; j++) {
+              if (this.item[i]['p_id'] == this.right_select[j]) {
+                newarray.push({
+                  esos_id: this.left_select_series,
+                  p_id: this.item[i]['p_id'],
+                  use_yn: true,
+                  sort: li_row,
+                })
+                li_row++
+              }
+            }
           }
 
           console.log(newarray)
 
+          let ls_url4 = `${this.url4}/several`
+
+          console.log(ls_url4)
+
           await axios
-            .post(this.url2, newarray)
-            .then((response) => (this.return_data = response.data))
+            .post(ls_url4, newarray)
+            .then((response) => (this.return_msg = response.data.message))
             .catch(function (error) {
               // 请求失败处理
               console.log(error)
             })
 
-          this.left_select_series = this.return_data.id
-        }
+          //拆解
+          let msg_array = this.return_msg.split('#')
+          this.return_success = msg_array[0]
+          this.return_msg = msg_array[1]
 
-        let newarray = []
-        let li_row = 0
+          this.$baseMessage(this.return_msg, 'success')
 
-        for (let i = 0; i < this.slist.length; i++) {
-          if (this.slist[i]['esps_Id'] == this.left_select_series) {
-            li_row = this.slist[i]['product_data'].length + 1
+          //成功就重新讀取
+          if (this.return_success == 'Y') {
+            this.clear()
+            setTimeout(() => {
+              this.fetchData()
+            }, 500)
           }
-        }
-
-        for (let i = 0; i < this.item.length; i++) {
-          for (let j = 0; j < this.right_select.length; j++) {
-            if (this.item[i]['p_id'] == this.right_select[j]) {
-              newarray.push({
-                esps_id: this.left_select_series,
-                p_id: this.item[i]['p_id'],
-                use_yn: true,
-                sort: li_row,
-              })
-              li_row++
-            }
-          }
-        }
-
-        console.log(newarray)
-
-        let ls_url4 = `${this.url4}/several`
-
-        console.log(ls_url4)
-
-        await axios
-          .post(ls_url4, newarray)
-          .then((response) => (this.return_msg = response.data.message))
-          .catch(function (error) {
-            // 请求失败处理
-            console.log(error)
-          })
-
-        //拆解
-        let msg_array = this.return_msg.split('#')
-        this.return_success = msg_array[0]
-        this.return_msg = msg_array[1]
-
-        this.$baseMessage(this.return_msg, 'success')
-
-        //成功就重新讀取
-        if (this.return_success == 'Y') {
-          this.clear()
-          setTimeout(() => {
-            this.fetchData()
-          }, 500)
         }
       },
 
@@ -933,6 +763,7 @@
         e.dataTransfer.setData('Text', JSON.stringify({ index, type, seriesIndex }))
       },
       SeriesDrop(e, listIndex) {
+        console.log('SeriesDrop')
         //"子分類"放置
         this.allowDrop(e)
         const data = JSON.parse(e.dataTransfer.getData('Text'))
@@ -955,6 +786,7 @@
         }
       },
       ProductDrop(e, targetIndex, targetType, targetseriesIndex = null) {
+        console.log('ProductDrop')
         //"小節"放置
         this.allowDrop(e)
         const data = JSON.parse(e.dataTransfer.getData('Text'))
@@ -991,6 +823,7 @@
   .div_out {
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
   }
 
   .div_float2 {
