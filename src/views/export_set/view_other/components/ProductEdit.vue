@@ -5,6 +5,7 @@
         <div class="div_title">
           <span>存入遊戲</span>
           <div>
+            <el-tag class="tagbtn" @click="show_company2">公司</el-tag>
             <el-tag class="tagbtn" @click="show_series_btn">子分類</el-tag>
             <el-tag class="tagbtn" @click="fetchData">重整</el-tag>
             <el-tag class="tagbtn" @click="list_sort">排序</el-tag>
@@ -51,6 +52,8 @@
               <input v-model="left_select_product" class="checkbox" name="list" type="checkbox" :value="product.esop_id" />
               <label :for="product.esop_id" :title="product.p_Name">
                 <span v-if="product.esp_chk" style="color: red">(一般已有)</span>
+                &nbsp;
+                <span v-if="company_show2" style="color: #2448ff">{{ product.c_Name }}</span>
                 {{ product.sort }} - {{ product.p_Name }}
               </label>
             </div>
@@ -83,6 +86,8 @@
         <div class="div_title">
           <span>選擇遊戲</span>
           <div>
+            <el-tag class="tagbtn" @click="show_company">公司</el-tag>
+            <el-tag class="tagbtn" @click="show_saledate">發售日</el-tag>
             <el-tag class="tagbtn" @click="selectAll">全選</el-tag>
             <el-tag class="tagbtn" @click="selectClear">清空勾選</el-tag>
           </div>
@@ -94,7 +99,12 @@
         <div class="div_item_group2">
           <div v-for="product in filterItem" :key="product.p_id" class="div_item_right">
             <input v-model="right_select" class="checkbox" name="list" type="checkbox" :value="product.p_id" />
-            <label :for="product.p_id" :title="product.name">{{ product.name }}</label>
+            <label :for="product.p_id" :title="product.name">
+              <span v-if="saledate_show" style="color: darkred">{{ filteredDate(product.sale_date) }}</span>
+              &nbsp;
+              <span v-if="company_show" style="color: #2448ff">{{ product.company_name }}</span>
+              {{ product.name }}
+            </label>
           </div>
         </div>
       </div>
@@ -137,6 +147,9 @@
         series_input_name: '',
         series_btn_show: false,
         esc_show: true,
+        saledate_show: false,
+        company_show: false,
+        company_show2: false,
 
         //中間插入sort
         insert_row: 0,
@@ -145,31 +158,15 @@
         return_msg: '',
         return_success: '',
 
-        //複製用
         form: {
           export_batch: 0,
           c_id: '',
           use_yn: false,
           sort: 0,
         },
-        form2: {
-          id: 0,
-          sort: 0,
-        },
         insert_form: [], //存檔用
         update_form: [],
 
-        //清空用
-        form_clear: {
-          export_batch: 0,
-          c_id: '',
-          use_yn: false,
-          sort: 0,
-        },
-        form_clear2: {
-          id: 0,
-          sort: 0,
-        },
         form_type: [],
         title: '',
         dialogFormVisible: false,
@@ -177,11 +174,30 @@
     },
     computed: {
       filterItem() {
-        let DataArry = this.item.filter(
-          (item) =>
-            item.name.toLowerCase().includes(this.right_search.toLowerCase()) ||
-            item.p_id.toLowerCase().includes(this.right_search.toLowerCase())
-        )
+        const regex = /^\d{4}-\d{4}$/ //4位數字-4位數字，例如2011-2015、2020-2030
+        let DataArry
+
+        if (regex.test(this.right_search)) {
+          //年分區間搜尋
+          let ls_year = this.right_search.split('-')
+          let li_year1 = parseInt(ls_year[0])
+          let li_year2 = parseInt(ls_year[1])
+
+          DataArry = this.item.filter(
+            (item) => li_year1 <= parseInt(item.sale_date.substring(0, 4)) && li_year2 >= parseInt(item.sale_date.substring(0, 4))
+          )
+        } else {
+          //一般搜尋
+          DataArry = this.item.filter(
+            (item) =>
+              item.name.toLowerCase().includes(this.right_search.toLowerCase()) ||
+              item.p_id.toLowerCase().includes(this.right_search.toLowerCase()) ||
+              item.sale_date.substring(0, 4).includes(this.right_search.toLowerCase()) ||
+              item.company_name.toLowerCase().includes(this.right_search.toLowerCase()) ||
+              item.c_id.toLowerCase().includes(this.right_search.toLowerCase())
+          )
+        }
+
         return DataArry
       },
       series_btn_show2() {
@@ -207,6 +223,12 @@
         this.product = []
         this.item = []
         this.fetchData()
+      },
+
+      filteredDate(date) {
+        // 轉成日期形式
+        date = `${date.substring(0, 4)}-${date.substring(4, 6)}-${date.substring(6, 8)}`
+        return date
       },
 
       async setSeriesName() {
@@ -355,8 +377,6 @@
         this.left_select_series = []
         this.left_select_product = []
 
-        this.form = this.form_clear
-        this.form2 = this.form_clear2
         this.insert_form = []
         this.update_form = []
         this.series_input_name = ''
@@ -373,6 +393,30 @@
         //this.dialogFormVisible = false
         //this.$emit('fetch-data')
         this.$emit('trigger-handleQuery')
+      },
+      show_saledate() {
+        console.log('show_saledate')
+        if (this.saledate_show) {
+          this.saledate_show = false
+        } else {
+          this.saledate_show = true
+        }
+      },
+      show_company() {
+        console.log('show_company')
+        if (this.company_show) {
+          this.company_show = false
+        } else {
+          this.company_show = true
+        }
+      },
+      show_company2() {
+        console.log('show_company2')
+        if (this.company_show2) {
+          this.company_show2 = false
+        } else {
+          this.company_show2 = true
+        }
       },
       selectAll() {
         console.log('selectAll')

@@ -346,6 +346,9 @@
             <el-form-item label="開放預售">
               <el-input v-model.trim="form_other.release.presale_Date" autocomplete="off" maxlength="8" />
             </el-form-item>
+            <el-form-item label="初回標記" required>
+              <el-switch v-model="form_other.release.official_First" />
+            </el-form-item>
             <el-form-item label="價格" required>
               <el-input v-model.number="form_other.release.price" autocomplete="off" maxlength="10" type="number" />
             </el-form-item>
@@ -407,6 +410,7 @@
               <el-button type="text" @click="modifyRelease(data)">編輯</el-button>
               <el-button type="text" @click="deleteRelease(data.id)">刪除</el-button>
               <br />
+              <el-tag v-if="data.official_First" title="初回標記" type="danger">系列初回</el-tag>
               <el-tag title="語音">{{ data.voice_Name }}</el-tag>
               <el-tag title="機種">{{ data.device_Name }}</el-tag>
               <el-tag title="分級">{{ data.rating_Name }}</el-tag>
@@ -596,6 +600,7 @@
             name: '',
             sale_Date: '',
             presale_Date: '',
+            official_First: false,
             price: 0,
             voice_id: 0,
             currency_id: 'XXX',
@@ -671,6 +676,7 @@
             name: '',
             sale_Date: '',
             presale_Date: '',
+            official_First: false,
             price: 0,
             voice_id: 0,
             currency_id: 'XXX',
@@ -1367,6 +1373,24 @@
           return false
         }
 
+        this.$baseConfirm(
+          '確定要刪除?',
+          null,
+          () => {
+            this.deleteRelease_submit(id)
+          },
+          () => {
+            return false
+          }
+        )
+      },
+      async deleteRelease_submit(id) {
+        console.log('deleteRelease_submit')
+        if (id == '' || id == null || id == undefined) {
+          alert('查無id')
+          return false
+        }
+
         let ls_url = `http://localhost:5252/api/product_release_day/${id}`
 
         await axios
@@ -1645,45 +1669,45 @@
       async saveNewRelease() {
         console.log('===saveNewRelease')
         if (
-          this.form_other.release.sale_Date == '' ||
-          this.form_other.release.sale_Date == null ||
-          this.form_other.release.sale_Date == undefined
+          this.form_other.release.sale_Date === '' ||
+          this.form_other.release.sale_Date === null ||
+          this.form_other.release.sale_Date === undefined
         ) {
           alert('請輸入發售日')
           return false
         }
-        if (this.form_other.release.price == '' || this.form_other.release.price == null || this.form_other.release.price == undefined) {
+        if (this.form_other.release.price === '' || this.form_other.release.price === null || this.form_other.release.price === undefined) {
           alert('請輸入售價')
           return false
         }
         if (
-          this.form_other.release.voice_id == '' ||
-          this.form_other.release.voice_id == null ||
-          this.form_other.release.voice_id == undefined
+          this.form_other.release.voice_id === '' ||
+          this.form_other.release.voice_id === null ||
+          this.form_other.release.voice_id === undefined
         ) {
           alert('請選擇語音類型')
           return false
         }
         if (
-          this.form_other.release.currency_id == '' ||
-          this.form_other.release.currency_id == null ||
-          this.form_other.release.currency_id == undefined
+          this.form_other.release.currency_id === '' ||
+          this.form_other.release.currency_id === null ||
+          this.form_other.release.currency_id === undefined
         ) {
           alert('請選擇貨幣類型')
           return false
         }
         if (
-          this.form_other.release.device_id == '' ||
-          this.form_other.release.device_id == null ||
-          this.form_other.release.device_id == undefined
+          this.form_other.release.device_id === '' ||
+          this.form_other.release.device_id === null ||
+          this.form_other.release.device_id === undefined
         ) {
           alert('請選擇機種類型')
           return false
         }
         if (
-          this.form_other.release.rating_id == '' ||
-          this.form_other.release.rating_id == null ||
-          this.form_other.release.rating_id == undefined
+          this.form_other.release.rating_id === '' ||
+          this.form_other.release.rating_id === null ||
+          this.form_other.release.rating_id === undefined
         ) {
           alert('請選擇分級')
           return false
