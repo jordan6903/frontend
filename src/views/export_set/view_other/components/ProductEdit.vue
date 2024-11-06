@@ -6,6 +6,7 @@
           <span>存入遊戲</span>
           <div>
             <el-tag class="tagbtn" @click="show_company2">公司</el-tag>
+            <el-tag class="tagbtn" @click="show_saledate2">發售日</el-tag>
             <el-tag class="tagbtn" @click="show_series_btn">子分類</el-tag>
             <el-tag class="tagbtn" @click="fetchData">重整</el-tag>
             <el-tag class="tagbtn" @click="list_sort">排序</el-tag>
@@ -52,6 +53,8 @@
               <input v-model="left_select_product" class="checkbox" name="list" type="checkbox" :value="product.esop_id" />
               <label :for="product.esop_id" :title="product.p_Name">
                 <span v-if="product.esp_chk" style="color: red">(一般已有)</span>
+                &nbsp;
+                <span v-if="saledate_show2" style="color: darkred">{{ filteredDate(product.sale_Date) }}</span>
                 &nbsp;
                 <span v-if="company_show2" style="color: #2448ff">{{ product.c_Name }}</span>
                 {{ product.sort }} - {{ product.p_Name }}
@@ -148,6 +151,7 @@
         series_btn_show: false,
         esc_show: true,
         saledate_show: false,
+        saledate_show2: false,
         company_show: false,
         company_show2: false,
 
@@ -400,6 +404,14 @@
           this.saledate_show = false
         } else {
           this.saledate_show = true
+        }
+      },
+      show_saledate2() {
+        console.log('show_saledate2')
+        if (this.saledate_show2) {
+          this.saledate_show2 = false
+        } else {
+          this.saledate_show2 = true
         }
       },
       show_company() {
