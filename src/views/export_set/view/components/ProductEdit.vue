@@ -1,124 +1,150 @@
 <template>
   <el-dialog :title="title" :visible.sync="dialogFormVisible" width="1200px" @close="close">
-    <div class="div_out">
-      <div class="div_float2">
-        <div class="div_title">
-          <span>存入遊戲</span>
-          <div>
-            <el-tag class="tagbtn" @click="show_series_btn">子分類</el-tag>
-            <el-tag class="tagbtn" @click="fetchData">重整</el-tag>
-            <el-tag class="tagbtn" @click="list_sort">排序</el-tag>
+    <div class="div_out_out">
+      <div v-show="titleInput_show" class="div_title_input">
+        <el-col :span="1" style="height: 32px; display: flex; align-items: center; justify-content: center">
+          <span style="font-size: 16px">標頭</span>
+        </el-col>
+        <el-col :span="16">
+          <el-input v-model.number="esc.title" autocomplete="off" maxlength="100" type="text" />
+        </el-col>
+        <el-col :span="2" style="margin-left: 10px">
+          <el-button type="primary" @click="notify_title_submit">存檔</el-button>
+        </el-col>
+      </div>
+
+      <div class="div_out">
+        <div class="div_float2">
+          <div class="div_title">
+            <span>存入遊戲</span>
+            <div>
+              <el-tag class="tagbtn" effect="dark" @click="notify_title">修改標頭</el-tag>
+              <el-tag class="tagbtn" @click="show_company2">公司</el-tag>
+              <el-tag class="tagbtn" @click="show_saledate2">發售日</el-tag>
+              <el-tag class="tagbtn" @click="show_series_btn">子分類</el-tag>
+              <el-tag class="tagbtn" @click="fetchData">重整</el-tag>
+              <el-tag class="tagbtn" @click="list_sort">排序</el-tag>
+            </div>
           </div>
-        </div>
-        <div v-show="series_btn_show" class="div_search_left">
-          <el-tag class="tagbtn" effect="dark" @click="notify_series('add')">新增</el-tag>
-          <el-tag class="tagbtn" effect="dark" @click="notify_series('update')">改名</el-tag>
-          <el-tag class="tagbtn" effect="dark" @click="delete_series">刪除</el-tag>
-        </div>
-        <div class="div_item_group2">
-          <div v-for="(series, sindex) in slist" :key="series.esps_Id" class="div_item2">
-            <div
-              class="div_item_left"
-              draggable="true"
-              @dragend="dragEnd"
-              @dragover="allowDrop"
-              @dragstart="dragStart($event, sindex, 'Series')"
-              @drop="SeriesDrop($event, sindex)"
-            >
-              <input
-                v-show="series_btn_show || series_btn_show2"
-                v-model="left_select_series"
-                class="checkbox"
-                name="list"
-                type="radio"
-                :value="series.esps_Id"
-                @change="setSeriesName"
-              />
-              <label :for="series.esps_Id">{{ series.sort }} - {{ series.name }}</label>
+          <div v-show="series_btn_show" class="div_search_left">
+            <el-tag class="tagbtn" effect="dark" @click="notify_series('add')">新增</el-tag>
+            <el-tag class="tagbtn" effect="dark" @click="notify_series('update')">改名</el-tag>
+            <el-tag class="tagbtn" effect="dark" @click="delete_series">刪除</el-tag>
+          </div>
+          <div class="div_item_group2">
+            <div v-for="(series, sindex) in slist" :key="series.esps_Id" class="div_item2">
+              <div
+                class="div_item_left"
+                draggable="true"
+                @dragend="dragEnd"
+                @dragover="allowDrop"
+                @dragstart="dragStart($event, sindex, 'Series')"
+                @drop="SeriesDrop($event, sindex)"
+              >
+                <input
+                  v-show="series_btn_show || series_btn_show2"
+                  v-model="left_select_series"
+                  class="checkbox"
+                  name="list"
+                  type="radio"
+                  :value="series.esps_Id"
+                  @change="setSeriesName"
+                />
+                <label :for="series.esps_Id">{{ series.sort }} - {{ series.name }}</label>
+              </div>
+
+              <div
+                v-for="(product, pindex) in series.product_data"
+                v-show="esc_show"
+                :key="product.esp_id"
+                class="div_product_data"
+                draggable="true"
+                @dragend="dragEnd"
+                @dragover="allowDrop"
+                @dragstart="dragStart($event, pindex, 'Product', sindex)"
+                @drop="ProductDrop($event, pindex, 'Product', sindex)"
+              >
+                <input v-model="left_select_product" class="checkbox" name="list" type="checkbox" :value="product.esp_id" />
+                <label :for="product.esp_Id" :title="product.p_Name">
+                  <span v-if="product.eso_chk" style="color: red">(其他已有)&nbsp;</span>
+                  <span v-if="saledate_show2" style="color: darkred">{{ filteredDate(product.sale_Date) }}&nbsp;</span>
+                  <span v-if="company_show2" style="color: #2448ff">{{ product.c_Name }}&nbsp;</span>
+                  {{ product.sort }} - {{ product.p_Name }}
+                </label>
+              </div>
             </div>
 
-            <div
-              v-for="(product, pindex) in series.product_data"
-              v-show="esc_show"
-              :key="product.esp_id"
-              class="div_product_data"
-              draggable="true"
-              @dragend="dragEnd"
-              @dragover="allowDrop"
-              @dragstart="dragStart($event, pindex, 'Product', sindex)"
-              @drop="ProductDrop($event, pindex, 'Product', sindex)"
-            >
-              <input v-model="left_select_product" class="checkbox" name="list" type="checkbox" :value="product.esp_id" />
-              <label :for="product.esp_Id" :title="product.p_Name">
+            <div v-show="series_notify_show" class="div_item2 div_item_left">
+              <input v-model="series_input_name" type="text" />
+              <el-tag v-show="series_notify_type == 'add'" class="tagbtn" type="danger" @click="insert_series">新增</el-tag>
+              <el-tag v-show="series_notify_type == 'update'" class="tagbtn" type="danger" @click="update_series">更新</el-tag>
+            </div>
+          </div>
+        </div>
+
+        <div class="div_middle">
+          <div class="div_arrow">
+            <div class="arrow">
+              <button class="el-button el-button--primary" type="button" @click="insert_product">
+                <span><i class="el-icon-arrow-left"></i></span>
+              </button>
+            </div>
+            <div class="arrow">
+              <button class="el-button el-button--primary" type="button" @click="delete_product">
+                <span><i class="el-icon-arrow-right"></i></span>
+              </button>
+            </div>
+          </div>
+          <!--
+          <div class="arrow" v-show="insert_row_show">
+            <button type="button" class="el-button el-button--primary" @click="list_sort_to">
+              <span>插入</span>
+            </button>
+          </div>
+        
+          <div v-show="insert_row_show">
+            <el-input type="number" autocomplete="off" maxlength="5" v-model.trim="insert_row" oninput="value=value.replace(/[^0-9]/g,'')"/>
+          </div>
+        --></div>
+
+        <div class="div_float2">
+          <div class="div_title">
+            <span>選擇遊戲</span>
+            <div>
+              <el-tag class="tagbtn" @click="show_allProduct">顯示其他遊戲</el-tag>
+              <el-tag class="tagbtn" @click="show_company">公司</el-tag>
+              <el-tag class="tagbtn" @click="show_saledate">發售日</el-tag>
+              <el-tag class="tagbtn" @click="selectAll">全選</el-tag>
+              <el-tag class="tagbtn" @click="selectClear">清空勾選</el-tag>
+            </div>
+          </div>
+          <div class="div_search">
+            <input v-model="right_search" autocomplete="off" class="input_search" placeholder="請輸入代號或遊戲名稱" type="text" />
+            <span class="input_search_icon"><i class="el-input__icon el-icon-search"></i></span>
+          </div>
+          <div v-show="!allProduct_show" class="div_item_group2">
+            <div v-for="product in filterItem" :key="product.p_id" class="div_item_right">
+              <input v-model="right_select" class="checkbox" name="list" type="checkbox" :value="product.p_id" />
+              <label :for="product.p_id" :title="product.name">
                 <span v-if="product.eso_chk" style="color: red">(其他已有)</span>
-                {{ product.sort }} - {{ product.p_Name }}
+                {{ product.name }}
               </label>
             </div>
           </div>
-
-          <div v-show="series_notify_show" class="div_item2 div_item_left">
-            <input v-model="series_input_name" type="text" />
-            <el-tag v-show="series_notify_type == 'add'" class="tagbtn" type="danger" @click="insert_series">新增</el-tag>
-            <el-tag v-show="series_notify_type == 'update'" class="tagbtn" type="danger" @click="update_series">更新</el-tag>
-          </div>
-        </div>
-      </div>
-
-      <div class="div_middle">
-        <div class="div_arrow">
-          <div class="arrow">
-            <button class="el-button el-button--primary" type="button" @click="insert_product">
-              <span><i class="el-icon-arrow-left"></i></span>
-            </button>
-          </div>
-          <div class="arrow">
-            <button class="el-button el-button--primary" type="button" @click="delete_product">
-              <span><i class="el-icon-arrow-right"></i></span>
-            </button>
-          </div>
-        </div>
-        <!--
-        <div class="arrow" v-show="insert_row_show">
-          <button type="button" class="el-button el-button--primary" @click="list_sort_to">
-            <span>插入</span>
-          </button>
-        </div>
-      
-        <div v-show="insert_row_show">
-          <el-input type="number" autocomplete="off" maxlength="5" v-model.trim="insert_row" oninput="value=value.replace(/[^0-9]/g,'')"/>
-        </div>
-      --></div>
-
-      <div class="div_float2">
-        <div class="div_title">
-          <span>選擇遊戲</span>
-          <div>
-            <el-tag class="tagbtn" @click="selectAll">全選</el-tag>
-            <el-tag class="tagbtn" @click="selectClear">清空勾選</el-tag>
-          </div>
-        </div>
-        <div class="div_search">
-          <input v-model="right_search" autocomplete="off" class="input_search" placeholder="請輸入代號或遊戲名稱" type="text" />
-          <span class="input_search_icon"><i class="el-input__icon el-icon-search"></i></span>
-        </div>
-        <div class="div_item_group2">
-          <div v-for="product in filterItem" :key="product.p_id" class="div_item_right">
-            <input v-model="right_select" class="checkbox" name="list" type="checkbox" :value="product.p_id" />
-            <label :for="product.p_id" :title="product.name">
-              <span v-if="product.eso_chk" style="color: red">(其他已有)</span>
-              {{ product.name }}
-            </label>
+          <div v-show="allProduct_show" class="div_item_group2">
+            <div v-for="product in filterItemAll" :key="product.p_id" class="div_item_right">
+              <input v-model="right_select" class="checkbox" name="list" type="checkbox" :value="product.p_id" />
+              <label :for="product.p_id" :title="product.name">
+                <span v-if="product.eso_chk" style="color: red">(其他已有)&nbsp;</span>
+                <span v-if="saledate_show" style="color: darkred">{{ filteredDate(product.sale_date) }}&nbsp;</span>
+                <span v-if="company_show" style="color: #2448ff">{{ product.company_name }}&nbsp;</span>
+                {{ product.name }}
+              </label>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-    <!--
-    <div slot="footer" class="dialog-footer">
-      <el-button @click="close">取 消</el-button>
-      <el-button type="primary" @click="save">確 定</el-button>
-    </div>
-    -->
   </el-dialog>
 </template>
 
@@ -131,19 +157,23 @@
       return {
         export_batch: 0,
         esc_id: 0,
-        url: 'http://localhost:5252/api/export_set_company/getbyid',
+        url: 'http://localhost:5252/api/export_set_company',
         url2: 'http://localhost:5252/api/export_set_product_series',
         url3: 'http://localhost:5252/api/product/getbycompanytt',
         url4: 'http://localhost:5252/api/export_set_product',
         url5: 'http://localhost:5252/api/export_set_other',
+        url6: 'http://localhost:5252/api/product/getforother',
 
         esc: {}, //Export_set_Company資料
         esp: [], //Export_set_Product資料
         esop: [], //Export_set_Other_Product資料
+        esp_all: [],
 
         //右側選單
-        product: [], //遊戲 原始資料(不動)
-        item: [], //遊戲 存取資料(更動)
+        product: [], //公司旗下遊戲 原始資料(不動)
+        product_all: [], //所有遊戲 原始資料(不動)
+        item: [], //公司旗下遊戲 存取資料(更動)
+        item_all: [], //所有遊戲 存取資料(更動)
         right_select: [],
         right_search: '',
 
@@ -152,11 +182,19 @@
         left_select_series: '', //選擇子分類
         left_select_product: [], //選擇遊戲
 
+        //顯示與其他設定
         series_notify_show: false,
         series_notify_type: '',
         series_input_name: '',
         series_btn_show: false,
         esc_show: true,
+        titleInput_show: false,
+        allProduct_show: false,
+
+        saledate_show: false,
+        saledate_show2: false,
+        company_show: false,
+        company_show2: false,
 
         //中間插入sort
         insert_row: 0,
@@ -167,31 +205,10 @@
         return_success: '',
         return_newseriesid: 0,
 
-        //複製用
-        form: {
-          export_batch: 0,
-          c_id: '',
-          use_yn: false,
-          sort: 0,
-        },
-        form2: {
-          id: 0,
-          sort: 0,
-        },
-        insert_form: [], //存檔用
+        //存檔用
+        insert_form: [],
         update_form: [],
 
-        //清空用
-        form_clear: {
-          export_batch: 0,
-          c_id: '',
-          use_yn: false,
-          sort: 0,
-        },
-        form_clear2: {
-          id: 0,
-          sort: 0,
-        },
         form_type: [],
         title: '',
         dialogFormVisible: false,
@@ -200,6 +217,14 @@
     computed: {
       filterItem() {
         let DataArry = this.item.filter(
+          (item) =>
+            item.name.toLowerCase().includes(this.right_search.toLowerCase()) ||
+            item.p_id.toLowerCase().includes(this.right_search.toLowerCase())
+        )
+        return DataArry
+      },
+      filterItemAll() {
+        let DataArry = this.item_all.filter(
           (item) =>
             item.name.toLowerCase().includes(this.right_search.toLowerCase()) ||
             item.p_id.toLowerCase().includes(this.right_search.toLowerCase())
@@ -231,6 +256,12 @@
         this.fetchData()
       },
 
+      filteredDate(date) {
+        // 轉成日期形式
+        date = `${date.substring(0, 4)}-${date.substring(4, 6)}-${date.substring(6, 8)}`
+        return date
+      },
+
       async setSeriesName() {
         console.log('setSeriesName')
         let ls_tmpname = ''
@@ -249,15 +280,24 @@
         }
       },
 
-      //準備選單data
+      //整理data
       async generateData() {
         console.log('generateData')
-        let lb_chk = false
+        let lb_chk = false,
+          lb_all_chk = false
         this.item = []
+        this.item_all = []
         this.plist = []
         let ls_tmparray = []
 
-        //右邊選單 篩選
+        //標頭
+        if (this.esc.title != null && this.esc.title != undefined && this.esc.title != '') {
+          this.title = `遊戲排序 - ${this.esc.c_Name} (${this.esc.title})`
+        } else {
+          this.title = `遊戲排序 - ${this.esc.c_Name}`
+        }
+
+        //右邊公司旗下選單 篩選
         for (let i = 0; i < this.product.length; i++) {
           for (let j = 0; j < this.esp.length; j++) {
             if (this.product[i]['p_id'] == this.esp[j]['p_id']) {
@@ -274,6 +314,25 @@
 
           if (!lb_chk) this.item.push(this.product[i]) //只放入沒重複的
           lb_chk = false //重置
+        }
+
+        //右邊全部選單 篩選
+        for (let i = 0; i < this.product_all.length; i++) {
+          for (let j = 0; j < this.esp_all.length; j++) {
+            if (this.product_all[i]['p_id'] == this.esp_all[j]['p_id']) {
+              lb_all_chk = true //標記有重複
+            }
+          }
+
+          //若其他列表已有, 則標記起來
+          for (let j = 0; j < this.esop.length; j++) {
+            if (this.product_all[i]['p_id'] == this.esop[j]['p_id']) {
+              this.product_all[i]['eso_chk'] = true
+            }
+          }
+
+          if (!lb_all_chk) this.item_all.push(this.product_all[i]) //只放入沒重複的
+          lb_all_chk = false //重置
         }
 
         //若其他列表已有, 則標記起來
@@ -296,12 +355,14 @@
           ls_tmparray = []
         }
       },
+
+      //讀取api
       async fetchData() {
         console.log('fetchData')
 
         let esc_id = this.esc_id
 
-        let ls_url = `${this.url}/${esc_id}`
+        let ls_url = `${this.url}/getbyid/${esc_id}`
         let ls_url2 = `${this.url2}/${esc_id}`
 
         console.log(ls_url)
@@ -337,7 +398,7 @@
         let ls_url4 = `${this.url4}?id=${esc_id}`
         console.log(ls_url4)
 
-        //ESP資料
+        //公司旗下的ESP資料
         await axios
           .get(ls_url4)
           .then((response) => (this.esp = response.data))
@@ -352,6 +413,28 @@
         await axios
           .get(ls_url5)
           .then((response) => (this.esop = response.data))
+          .catch(function (error) {
+            console.log(error)
+          })
+
+        let ls_url6 = `${this.url6}`
+        console.log(ls_url6)
+
+        //抓出所有跟漢化相關的遊戲
+        await axios
+          .get(ls_url6)
+          .then((response) => (this.product_all = response.data))
+          .catch(function (error) {
+            console.log(error)
+          })
+
+        let ls_url7 = `${this.url4}/getbybatch?id=${this.export_batch}`
+        console.log(ls_url7)
+
+        //所有的ESP資料
+        await axios
+          .get(ls_url7)
+          .then((response) => (this.esp_all = response.data))
           .catch(function (error) {
             console.log(error)
           })
@@ -371,8 +454,6 @@
         this.left_select_series = []
         this.left_select_product = []
 
-        this.form = this.form_clear
-        this.form2 = this.form_clear2
         this.insert_form = []
         this.update_form = []
         this.series_input_name = ''
@@ -384,26 +465,51 @@
       },
       close() {
         console.log('===close')
-        //this.$refs['form'].resetFields()
-        //this.form = this.$options.data().form
-        //this.dialogFormVisible = false
-        //this.$emit('fetch-data')
         this.$emit('trigger-handleQuery')
       },
+      show_saledate() {
+        console.log('show_saledate')
+        if (this.saledate_show) {
+          this.saledate_show = false
+        } else {
+          this.saledate_show = true
+        }
+      },
+      show_saledate2() {
+        console.log('show_saledate2')
+        if (this.saledate_show2) {
+          this.saledate_show2 = false
+        } else {
+          this.saledate_show2 = true
+        }
+      },
+      show_company() {
+        console.log('show_company')
+        if (this.company_show) {
+          this.company_show = false
+        } else {
+          this.company_show = true
+        }
+      },
+      show_company2() {
+        console.log('show_company2')
+        if (this.company_show2) {
+          this.company_show2 = false
+        } else {
+          this.company_show2 = true
+        }
+      },
       selectAll() {
-        console.log('selectAll')
         this.right_select = []
         for (let i = 0; i < this.item.length; i++) {
           this.right_select.push(this.item[i]['p_id'])
         }
       },
       selectClear() {
-        console.log('selectClear')
         this.right_select = []
       },
 
       select_right() {
-        console.log('select_right')
         console.log(this.right_select.length)
         if (this.right_select.length > 0) {
           this.series_btn_show = true
@@ -415,7 +521,6 @@
       },
 
       show_series_btn() {
-        console.log('show_series_btn')
         if (this.series_btn_show) {
           this.series_btn_show = false
           this.esc_show = true
@@ -425,14 +530,54 @@
         }
       },
 
+      show_allProduct() {
+        console.log('show_allProduct')
+        this.right_select = [] //清空選項
+        if (this.allProduct_show) {
+          this.allProduct_show = false
+        } else {
+          this.allProduct_show = true
+        }
+      },
+
       notify_series(type) {
-        console.log('notify_series')
         if (this.series_notify_show) {
           this.series_notify_show = false
         } else {
           this.series_notify_show = true
         }
         this.series_notify_type = type
+      },
+
+      notify_title() {
+        if (this.titleInput_show) {
+          this.titleInput_show = false
+        } else {
+          this.titleInput_show = true
+        }
+      },
+
+      async notify_title_submit() {
+        console.log('notify_title_submit')
+
+        let ls_url = `${this.url}/${this.esc_id}`
+
+        await axios
+          .put(ls_url, this.esc)
+          .then((response) => (this.return_msg = response.data.message))
+          .catch(function (error) {
+            // 请求失败处理
+            console.log(error)
+          })
+
+        //拆解
+        let msg_array = this.return_msg.split('#')
+        this.return_success = msg_array[0]
+        this.return_msg = msg_array[1]
+
+        this.$baseMessage(this.return_msg, 'success')
+
+        this.fetchData()
       },
 
       //重新排序
@@ -840,12 +985,20 @@
           }
         }
 
-        for (let i = 0; i < this.item.length; i++) {
+        let item
+
+        if (!this.allProduct_show) {
+          item = this.item
+        } else {
+          item = this.item_all
+        }
+
+        for (let i = 0; i < item.length; i++) {
           for (let j = 0; j < this.right_select.length; j++) {
-            if (this.item[i]['p_id'] == this.right_select[j]) {
+            if (item[i]['p_id'] == this.right_select[j]) {
               newarray.push({
                 esps_id: this.left_select_series,
-                p_id: this.item[i]['p_id'],
+                p_id: item[i]['p_id'],
                 use_yn: true,
                 sort: li_row,
               })
@@ -991,6 +1144,15 @@
   .div_out {
     display: flex;
     flex-direction: row;
+  }
+
+  .div_out_out {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .div_title_input {
+    margin-bottom: 30px;
   }
 
   .div_float2 {

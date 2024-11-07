@@ -52,11 +52,9 @@
             >
               <input v-model="left_select_product" class="checkbox" name="list" type="checkbox" :value="product.esop_id" />
               <label :for="product.esop_id" :title="product.p_Name">
-                <span v-if="product.esp_chk" style="color: red">(一般已有)</span>
-                &nbsp;
-                <span v-if="saledate_show2" style="color: darkred">{{ filteredDate(product.sale_Date) }}</span>
-                &nbsp;
-                <span v-if="company_show2" style="color: #2448ff">{{ product.c_Name }}</span>
+                <span v-if="product.esp_chk" style="color: red">(一般已有)&nbsp;</span>
+                <span v-if="saledate_show2" style="color: darkred">{{ filteredDate(product.sale_Date) }}&nbsp;</span>
+                <span v-if="company_show2" style="color: #2448ff">{{ product.c_Name }}&nbsp;</span>
                 {{ product.sort }} - {{ product.p_Name }}
               </label>
             </div>
@@ -103,9 +101,8 @@
           <div v-for="product in filterItem" :key="product.p_id" class="div_item_right">
             <input v-model="right_select" class="checkbox" name="list" type="checkbox" :value="product.p_id" />
             <label :for="product.p_id" :title="product.name">
-              <span v-if="saledate_show" style="color: darkred">{{ filteredDate(product.sale_date) }}</span>
-              &nbsp;
-              <span v-if="company_show" style="color: #2448ff">{{ product.company_name }}</span>
+              <span v-if="saledate_show" style="color: darkred">{{ filteredDate(product.sale_date) }}&nbsp;</span>
+              <span v-if="company_show" style="color: #2448ff">{{ product.company_name }}&nbsp;</span>
               {{ product.name }}
             </label>
           </div>

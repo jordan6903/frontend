@@ -1,10 +1,11 @@
 <template>
-  <el-dialog :title="title" :visible.sync="dialogFormVisible" width="800px" @close="close">
+  <el-dialog :title="title" :visible.sync="dialogFormVisible" width="1200px" @close="close">
     <div class="div_out">
       <div class="div_float">
         <div class="div_title">
           <span>存入公司</span>
           <div>
+            <el-tag class="tagbtn" @click="show_nouse">剔除名單</el-tag>
             <el-tag class="tagbtn" @click="fetchData">重整</el-tag>
             <el-tag class="tagbtn" @click="list_sort">排序</el-tag>
           </div>
@@ -13,7 +14,7 @@
           <input v-model="left_search" autocomplete="off" class="input_search" placeholder="請輸入代號或公司名稱" type="text" />
           <span class="input_search_icon"><i class="el-input__icon el-icon-search"></i></span>
         </div>
-        <ul class="ul_item_group_drag">
+        <ul v-show="!nouse_show" class="ul_item_group_drag">
           <li
             v-for="(company, index) in filterList"
             :key="company.id"
@@ -25,6 +26,21 @@
             @drop="drop($event, index)"
           >
             <input v-model="left_select" class="checkbox" name="list" type="checkbox" :value="company.id" />
+            <label :for="company.id">{{ company.sort }} - {{ company.c_Name }}</label>
+          </li>
+        </ul>
+        <ul v-show="nouse_show" class="ul_item_group_drag">
+          <li
+            v-for="(company, index) in filterList_nouse"
+            :key="company.id"
+            class="li_item"
+            draggable="true"
+            @dragend="dragEnd"
+            @dragover="overDrop($event)"
+            @dragstart="dragStart($event, index)"
+            @drop="drop($event, index)"
+          >
+            <input v-model="left_select_nouse" class="checkbox" name="list" type="checkbox" :value="company.id" />
             <label :for="company.id">{{ company.sort }} - {{ company.c_Name }}</label>
           </li>
         </ul>
@@ -52,6 +68,19 @@
 
         <div v-show="insert_row_show">
           <el-input v-model.trim="insert_row" autocomplete="off" maxlength="5" oninput="value=value.replace(/[^0-9]/g,'')" type="number" />
+        </div>
+
+        <div class="div_arrow">
+          <div v-show="!nouse_show" class="arrow">
+            <button class="el-button el-button--primary" type="button" @click="set_nouse">
+              <span>剔除</span>
+            </button>
+          </div>
+          <div v-show="nouse_show" class="arrow">
+            <button class="el-button el-button--primary" type="button" @click="set_yesuse">
+              <span>還原</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -101,8 +130,11 @@
 
         //左側選單
         list: [],
+        list_nouse: [], //剔除選單
         left_select: [],
+        left_select_nouse: [],
         left_search: '',
+        nouse_show: false,
 
         //中間插入sort
         insert_row: 0,
@@ -156,6 +188,14 @@
         )
         return DataArry
       },
+      filterList_nouse() {
+        let DataArry = this.list_nouse.filter(
+          (item) =>
+            item.c_Name.toLowerCase().includes(this.left_search.toLowerCase()) ||
+            item.c_id.toLowerCase().includes(this.left_search.toLowerCase())
+        )
+        return DataArry
+      },
       filterItem() {
         let DataArry = this.item.filter(
           (item) =>
@@ -197,6 +237,12 @@
             }
           }
 
+          for (let j = 0; j < this.list_nouse.length; j++) {
+            if (this.company[i]['c_id'] == this.list_nouse[j]['c_id']) {
+              lb_chk = true //標記有重複
+            }
+          }
+
           if (!lb_chk) this.item.push(this.company[i]) //只放入沒重複的
           lb_chk = false //重置
         }
@@ -208,6 +254,7 @@
 
         let ls_url = `${this.url}/${ls_batch}?UseYN=Y`
         let ls_url2 = `${this.url2}`
+        let ls_url3 = `${this.url}/${ls_batch}?UseYN=N`
 
         //主資料
         await axios
@@ -221,6 +268,14 @@
         await axios
           .get(ls_url2)
           .then((response) => (this.company = response.data))
+          .catch(function (error) {
+            console.log(error)
+          })
+
+        //剔除選單
+        await axios
+          .get(ls_url3)
+          .then((response) => (this.list_nouse = response.data))
           .catch(function (error) {
             console.log(error)
           })
@@ -379,6 +434,138 @@
         }
       },
 
+      show_nouse() {
+        console.log('show_nouse')
+        if (this.nouse_show) {
+          this.nouse_show = false
+        } else {
+          this.nouse_show = true
+        }
+      },
+
+      async set_nouse() {
+        console.log('set_nouse')
+
+        if (this.right_select.length == 0 && this.left_select.length == 0) {
+          alert('請選擇項目')
+        } else {
+          console.log(this.right_select)
+          console.log(this.left_select)
+
+          //先處理右邊
+          for (let i = 0; i < this.right_select.length; i++) {
+            this.insert_form.push({
+              export_batch: this.export_batch,
+              c_id: this.right_select[i],
+              use_yn: false,
+              sort: 0,
+            })
+          }
+
+          console.log(this.insert_form)
+
+          await axios
+            .post(this.url3, this.insert_form)
+            .then((response) => (this.return_msg = response.data.message))
+            .catch(function (error) {
+              // 请求失败处理
+              console.log(error)
+            })
+
+          //拆解
+          let msg_array = this.return_msg.split('#')
+          this.return_success = msg_array[0]
+          this.return_msg = msg_array[1]
+
+          this.$baseMessage(this.return_msg, 'success')
+
+          //再來弄左邊
+          for (let i = 0; i < this.left_select.length; i++) {
+            for (let j = 0; j < this.list.length; j++) {
+              if (this.left_select[i] == this.list[j]['id']) {
+                this.update_form.push({
+                  id: this.list[j]['id'],
+                  use_yn: false,
+                  sort: this.list[j]['sort'],
+                })
+                break
+              }
+            }
+          }
+
+          console.log(this.update_form)
+
+          await axios
+            .put(this.url3, this.update_form)
+            .then((response) => (this.return_msg = response.data.message))
+            .catch(function (error) {
+              // 请求失败处理
+              console.log(error)
+            })
+
+          //拆解
+          msg_array = this.return_msg.split('#')
+          this.return_success = msg_array[0]
+          this.return_msg = msg_array[1]
+
+          this.$baseMessage(this.return_msg, 'success')
+
+          //成功就重新讀取
+          if (this.return_success == 'Y') {
+            this.clear()
+            setTimeout(() => {
+              this.fetchData()
+            }, 500)
+          }
+        }
+      },
+
+      async set_yesuse() {
+        console.log('set_nouse')
+
+        if (this.left_select_nouse.length == 0) {
+          alert('剔除選單請選擇項目')
+        } else {
+          for (let i = 0; i < this.left_select_nouse.length; i++) {
+            for (let j = 0; j < this.list_nouse.length; j++) {
+              if (this.left_select_nouse[i] == this.list_nouse[j]['id']) {
+                this.update_form.push({
+                  id: this.list_nouse[j]['id'],
+                  use_yn: true,
+                  sort: this.list_nouse[j]['sort'],
+                })
+                break
+              }
+            }
+          }
+
+          console.log(this.update_form)
+
+          await axios
+            .put(this.url3, this.update_form)
+            .then((response) => (this.return_msg = response.data.message))
+            .catch(function (error) {
+              // 请求失败处理
+              console.log(error)
+            })
+
+          //拆解
+          let msg_array = this.return_msg.split('#')
+          this.return_success = msg_array[0]
+          this.return_msg = msg_array[1]
+
+          this.$baseMessage(this.return_msg, 'success')
+
+          //成功就重新讀取
+          if (this.return_success == 'Y') {
+            this.clear()
+            setTimeout(() => {
+              this.fetchData()
+            }, 500)
+          }
+        }
+      },
+
       //新增公司
       async insert_company() {
         console.log('insert_company')
@@ -437,10 +624,11 @@
       async delete_company() {
         console.log('delete_company')
 
-        if (this.left_select.length == 0) {
+        if (this.left_select.length == 0 && this.left_select_nouse.length == 0) {
           alert('請選擇項目')
         } else {
           console.log(this.left_select)
+          console.log(this.left_select_nouse)
           let msg_array,
             lb_chk = false
 
@@ -468,6 +656,32 @@
               break
             }
           }
+
+          for (let i = 0; i < this.left_select_nouse.length; i++) {
+            let ls_url = this.url
+            ls_url += `/${this.left_select_nouse[i]}`
+            console.log(ls_url)
+
+            await axios
+              .delete(ls_url)
+              .then((response) => (this.return_msg = response.data.message))
+              .catch(function (error) {
+                // 请求失败处理
+                console.log(error)
+              })
+
+            msg_array = this.return_msg.split('#')
+            this.return_success = msg_array[0]
+            this.return_msg = msg_array[1]
+
+            if (this.return_success == 'Y') {
+              lb_chk = true
+            } else {
+              this.$baseMessage(this.return_msg, 'success')
+              break
+            }
+          }
+
           this.clear()
           this.fetchData()
         }
@@ -484,6 +698,7 @@
           for (let i = 0; i < this.list.length; i++) {
             this.update_form.push({
               id: this.list[i]['id'],
+              use_yn: true,
               sort: this.list[i]['sort'],
             })
           }
@@ -594,8 +809,8 @@
   }
 
   .div_float {
-    height: 500px;
-    width: 300px;
+    height: 600px;
+    width: 500px;
     background: whitesmoke;
     border-radius: 8px;
     border: 1px #c0c4cc solid;
@@ -639,7 +854,7 @@
   .ul_item_group,
   .ul_item_group_drag {
     overflow: auto;
-    height: 420px;
+    height: 520px;
     padding: 5px;
     margin: 0px;
   }
