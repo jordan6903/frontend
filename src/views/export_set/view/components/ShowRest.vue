@@ -16,12 +16,8 @@
       <div class="div_out">
         <div class="div_float2">
           <div class="div_title">
-            <span>存入遊戲</span>
+            <span>漏掉的遊戲</span>
             <div>
-              <el-tag class="tagbtn" effect="dark" @click="notify_title">修改標頭</el-tag>
-              <el-tag class="tagbtn" @click="show_detail2">顯示細節</el-tag>
-              <el-tag class="tagbtn" @click="show_series_btn">子分類</el-tag>
-              <el-tag class="tagbtn" @click="fetchData">重整</el-tag>
               <el-tag class="tagbtn" @click="list_sort">排序</el-tag>
             </div>
           </div>
@@ -31,52 +27,9 @@
             <el-tag class="tagbtn" effect="dark" @click="delete_series">刪除</el-tag>
           </div>
           <div class="div_item_group2">
-            <div v-for="(series, sindex) in slist" :key="series.esps_Id" class="div_item2">
-              <div
-                class="div_item_left"
-                draggable="true"
-                @dragend="dragEnd"
-                @dragover="allowDrop"
-                @dragstart="dragStart($event, sindex, 'Series')"
-                @drop="SeriesDrop($event, sindex)"
-              >
-                <input
-                  v-show="series_btn_show || series_btn_show2"
-                  v-model="left_select_series"
-                  class="checkbox"
-                  name="list"
-                  type="radio"
-                  :value="series.esps_Id"
-                  @change="setSeriesName"
-                />
-                <label :for="series.esps_Id">{{ series.sort }} - {{ series.name }}</label>
-              </div>
-
-              <div
-                v-for="(product, pindex) in series.product_data"
-                v-show="esc_show"
-                :key="product.esp_id"
-                class="div_product_data"
-                draggable="true"
-                @dragend="dragEnd"
-                @dragover="allowDrop"
-                @dragstart="dragStart($event, pindex, 'Product', sindex)"
-                @drop="ProductDrop($event, pindex, 'Product', sindex)"
-              >
-                <input v-model="left_select_product" class="checkbox" name="list" type="checkbox" :value="product.esp_id" />
-                <label :for="product.esp_Id" :title="product.p_Name">
-                  <span v-if="product.eso_chk" style="color: red">(其他已有)&nbsp;</span>
-                  <span v-if="detail_show2" style="color: darkred">{{ filteredDate(product.sale_Date) }}&nbsp;</span>
-                  <span v-if="detail_show2" style="color: #2448ff">{{ product.c_Name }}&nbsp;</span>
-                  {{ product.sort }} - {{ product.p_Name }}
-                </label>
-              </div>
-            </div>
-
-            <div v-show="series_notify_show" class="div_item2 div_item_left">
-              <input v-model="series_input_name" type="text" />
-              <el-tag v-show="series_notify_type == 'add'" class="tagbtn" type="danger" @click="insert_series">新增</el-tag>
-              <el-tag v-show="series_notify_type == 'update'" class="tagbtn" type="danger" @click="update_series">更新</el-tag>
+            <div v-for="item in rest_product" :key="item.id" class="div_item2">
+              <span tyle="color: #2448ff">{{ item.c_Name }}&nbsp;</span>
+              {{ item.name }}
             </div>
           </div>
         </div>
@@ -98,37 +51,24 @@
 
         <div class="div_float2">
           <div class="div_title">
-            <span>選擇遊戲</span>
+            <span>重複的遊戲</span>
             <div>
-              <el-tag v-show="allProduct_show" class="tagbtn" @click="show_allProduct_other">隱藏其他</el-tag>
-              <el-tag class="tagbtn" @click="show_allProduct">其他列表</el-tag>
-              <el-tag class="tagbtn" @click="show_detail">顯示細節</el-tag>
-              <el-tag class="tagbtn" @click="selectAll">全選</el-tag>
               <el-tag class="tagbtn" @click="selectClear">清空勾選</el-tag>
             </div>
           </div>
-          <div class="div_search">
-            <input v-model="right_search" autocomplete="off" class="input_search" placeholder="請輸入代號或遊戲名稱" type="text" />
-            <span class="input_search_icon"><i class="el-input__icon el-icon-search"></i></span>
-          </div>
-          <div v-show="!allProduct_show" class="div_item_group2">
-            <div v-for="product in filterItem" :key="product.p_id" class="div_item_right">
-              <input v-model="right_select" class="checkbox" name="list" type="checkbox" :value="product.p_id" />
-              <label :for="product.p_id" :title="product.name">
-                <span v-if="product.eso_chk" style="color: red">(其他已有)</span>
-                {{ product.name }}
-              </label>
+          <div class="div_search"></div>
+          <div class="div_item_group2">
+            <div class="div_item2">
+              <div class="div_item_left">ESP自我比對</div>
+              <div v-for="item in repeat_product.esp" :key="item" class="div_product_data">{{ item }}</div>
             </div>
-          </div>
-          <div v-show="allProduct_show" class="div_item_group2">
-            <div v-for="product in filterItemAll" :key="product.p_id" class="div_item_right">
-              <input v-model="right_select" class="checkbox" name="list" type="checkbox" :value="product.p_id" />
-              <label :for="product.p_id" :title="product.name">
-                <span v-if="product.eso_chk" style="color: red">(其他已有)&nbsp;</span>
-                <span v-if="detail_show" style="color: darkred">{{ filteredDate(product.sale_date) }}&nbsp;</span>
-                <span v-if="detail_show" style="color: #2448ff">{{ product.company_name }}&nbsp;</span>
-                {{ product.name }}
-              </label>
+            <div class="div_item2">
+              <div class="div_item_left">ESOP自我比對</div>
+              <div v-for="item in repeat_product.esop" :key="item" class="div_product_data">{{ item }}</div>
+            </div>
+            <div class="div_item2">
+              <div class="div_item_left">交互比對</div>
+              <div v-for="item in repeat_product.vs" :key="item.p_Name" class="div_product_data">{{ item.p_Name }}</div>
             </div>
           </div>
         </div>
@@ -141,24 +81,27 @@
   import { doEdit } from '@/api/table'
 
   export default {
-    name: 'ProductEdit',
+    name: 'ShowRest',
     data() {
       return {
         export_batch: 0,
         esc_id: 0,
-        url: 'http://localhost:5252/api/export_set_company',
-        url2: 'http://localhost:5252/api/export_set_product_series',
-        url3: 'http://localhost:5252/api/product/getbycompanytt',
-        url4: 'http://localhost:5252/api/export_set_product',
-        url5: 'http://localhost:5252/api/export_set_other',
-        url6: 'http://localhost:5252/api/product/getforother',
-        url7: 'http://localhost:5252/api/export_set_other_product',
+        url: 'http://localhost:5252/api/product/getforother',
+        url2: 'http://localhost:5252/api/export_set_product',
+        url3: 'http://localhost:5252/api/export_set_other_product',
 
         esc: {}, //Export_set_Company資料
         esp: [], //Export_set_Product資料
         esop: [], //Export_set_Other_Product資料
-        esp_all: [],
+        esp_all: [], //Export_set_Product資料
         esop_all: [], //Export_set_Product資料(全部)
+
+        rest_product: [], //漏掉的遊戲
+        repeat_product: {
+          esp: [],
+          esop: [],
+          vs: [], //交叉比對
+        }, //重複的遊戲
 
         //右側選單
         product: [], //公司旗下遊戲 原始資料(不動)
@@ -204,43 +147,15 @@
         dialogFormVisible: false,
       }
     },
-    computed: {
-      filterItem() {
-        let DataArry = this.item.filter(
-          (item) =>
-            item.name.toLowerCase().includes(this.right_search.toLowerCase()) ||
-            item.p_id.toLowerCase().includes(this.right_search.toLowerCase())
-        )
-        return DataArry
-      },
-      filterItemAll() {
-        let DataArry = this.item_all.filter(
-          (item) =>
-            (item.name.toLowerCase().includes(this.right_search.toLowerCase()) ||
-              item.p_id.toLowerCase().includes(this.right_search.toLowerCase()) ||
-              item.c_id.toLowerCase().includes(this.right_search.toLowerCase()) ||
-              item.company_name.toLowerCase().includes(this.right_search.toLowerCase())) &&
-            (this.allProduct_other_show ? item.eso_chk === false : true)
-        )
-        return DataArry
-      },
-      series_btn_show2() {
-        return this.right_select.length > 0 ? true : false
-      },
-      insert_row_show() {
-        return this.left_select_product.length > 0 ? true : false
-      },
-    },
+    computed: {},
     created() {
       console.log('created')
     },
     methods: {
-      showEdit(id, batch) {
+      showEdit(batch) {
         console.log('===showEdit')
-        console.log(id)
         console.log(batch)
         this.title = '遊戲排序'
-        this.esc_id = id
         this.export_batch = batch
         this.dialogFormVisible = true
 
@@ -276,175 +191,111 @@
       //整理data
       async generateData() {
         console.log('generateData')
-        let lb_chk = false,
-          lb_all_chk = false
-        this.item = []
-        this.item_all = []
-        this.plist = []
-        let ls_tmparray = []
 
-        //標頭
-        if (this.esc.title != null && this.esc.title != undefined && this.esc.title != '') {
-          this.title = `遊戲排序 - ${this.esc.c_Name} (${this.esc.title})`
-        } else {
-          this.title = `遊戲排序 - ${this.esc.c_Name}`
-        }
+        this.rest_product = this.product_all
 
-        //右邊公司旗下選單 篩選
-        for (let i = 0; i < this.product.length; i++) {
-          for (let j = 0; j < this.esp.length; j++) {
-            if (this.product[i]['p_id'] == this.esp[j]['p_id']) {
-              lb_chk = true //標記有重複
-            }
-          }
+        console.log(this.rest_product)
+        console.log(this.esp_all)
+        console.log(this.esop_all)
 
-          //若其他列表已有, 則標記起來
-          for (let j = 0; j < this.esop_all.length; j++) {
-            if (this.product[i]['p_id'] == this.esop_all[j]['p_id']) {
-              this.product[i]['eso_chk'] = true
-            }
-          }
-
-          if (!lb_chk) this.item.push(this.product[i]) //只放入沒重複的
-          lb_chk = false //重置
-        }
-
-        //右邊全部選單 篩選
-        for (let i = 0; i < this.product_all.length; i++) {
+        //漏掉的遊戲
+        for (let i = this.rest_product.length - 1; i >= 0; i--) {
           for (let j = 0; j < this.esp_all.length; j++) {
-            if (this.product_all[i]['p_id'] == this.esp_all[j]['p_id']) {
-              lb_all_chk = true //標記有重複
+            if (this.rest_product[i]['p_id'] == this.esp_all[j]['p_id']) {
+              this.rest_product.splice(i, 1)
+              break
             }
           }
+        }
 
-          //若其他列表已有, 則標記起來
+        for (let i = this.rest_product.length - 1; i >= 0; i--) {
           for (let j = 0; j < this.esop_all.length; j++) {
-            if (this.product_all[i]['p_id'] == this.esop_all[j]['p_id']) {
-              this.product_all[i]['eso_chk'] = true
-            }
-          }
-
-          if (!lb_all_chk) this.item_all.push(this.product_all[i]) //只放入沒重複的
-          lb_all_chk = false //重置
-        }
-
-        //若其他列表已有, 則標記起來
-        for (let i = 0; i < this.esp.length; i++) {
-          for (let j = 0; j < this.esop_all.length; j++) {
-            if (this.esp[i]['p_id'] == this.esop_all[j]['p_id']) {
-              this.esp[i]['eso_chk'] = true
+            if (this.rest_product[i]['p_id'] == this.esop_all[j]['p_id']) {
+              this.rest_product.splice(i, 1)
+              break
             }
           }
         }
 
-        //左邊選單 把esp塞進去
-        for (let i = 0; i < this.slist.length; i++) {
-          for (let j = 0; j < this.esp.length; j++) {
-            if (this.slist[i]['esps_Id'] == this.esp[j]['esps_id']) {
-              ls_tmparray.push(this.esp[j])
-            }
+        let data1 = this.esp_all
+        let data2 = this.esop_all
+
+        //重複的遊戲
+        const pidCount1 = {},
+          pidCount2 = {}
+        const duplicates1 = [],
+          duplicates2 = []
+
+        //esp自我檢查
+        data1.forEach((item) => {
+          const p_id = item.p_id
+          pidCount1[p_id] = (pidCount1[p_id] || 0) + 1
+        })
+
+        data1.forEach((item) => {
+          if (pidCount1[item.p_id] > 1) {
+            duplicates1.push(item.p_Name)
           }
-          this.slist[i]['product_data'] = ls_tmparray
-          ls_tmparray = []
-        }
+        })
+
+        //esop自我檢查
+        data2.forEach((item) => {
+          const p_id = item.p_id
+          pidCount2[p_id] = (pidCount2[p_id] || 0) + 1
+        })
+
+        data2.forEach((item) => {
+          if (pidCount2[item.p_id] > 1) {
+            duplicates2.push(item.p_Name)
+          }
+        })
+
+        //esp跟esop交互檢查
+        const pidInData2 = new Set(data2.map((item) => item.p_id))
+        const duplicates = data1.filter((item) => pidInData2.has(item.p_id))
+
+        this.repeat_product.esp = duplicates1
+        this.repeat_product.esop = duplicates2
+        this.repeat_product.vs = duplicates
+
+        console.log(this.repeat_product.esp)
+        console.log(this.repeat_product.esop)
+        console.log(this.repeat_product.vs)
       },
 
       //讀取api
       async fetchData() {
         console.log('fetchData')
 
-        let esc_id = this.esc_id
-
-        let ls_url = `${this.url}/getbyid/${esc_id}`
-        let ls_url2 = `${this.url2}/${esc_id}`
-
-        console.log(ls_url)
-        console.log(ls_url2)
-
-        //ESC資料
-        await axios
-          .get(ls_url)
-          .then((response) => (this.esc = response.data[0]))
-          .catch(function (error) {
-            console.log(error)
-          })
-
-        //子分類資料
-        await axios
-          .get(ls_url2)
-          .then((response) => (this.slist = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-
-        let ls_url3 = `${this.url3}/${this.esc.c_id}`
-        console.log(ls_url3)
-
-        //公司旗下的遊戲列表
-        await axios
-          .get(ls_url3)
-          .then((response) => (this.product = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-
-        let ls_url4 = `${this.url4}?id=${esc_id}`
-        console.log(ls_url4)
-
-        //公司旗下的ESP資料
-        await axios
-          .get(ls_url4)
-          .then((response) => (this.esp = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-
-        let ls_url5 = `${this.url5}/viewp/${this.export_batch}`
-        console.log(ls_url5)
-
-        //ESOP資料
-        await axios
-          .get(ls_url5)
-          .then((response) => (this.esop = response.data))
-          .catch(function (error) {
-            console.log(error)
-          })
-
-        let ls_url6 = `${this.url6}`
-        console.log(ls_url6)
+        let ls_url = `${this.url}`
+        let ls_url2 = `${this.url2}/getbybatch?id=${this.export_batch}`
+        let ls_url3 = `${this.url3}/getbybatch?id=${this.export_batch}`
 
         //抓出所有跟漢化相關的遊戲
         await axios
-          .get(ls_url6)
+          .get(ls_url)
           .then((response) => (this.product_all = response.data))
           .catch(function (error) {
             console.log(error)
           })
 
-        let ls_url7 = `${this.url4}/getbybatch?id=${this.export_batch}`
-        console.log(ls_url7)
-
         //所有的ESP資料
         await axios
-          .get(ls_url7)
+          .get(ls_url2)
           .then((response) => (this.esp_all = response.data))
           .catch(function (error) {
             console.log(error)
           })
 
-        let ls_url8 = `${this.url7}/getbybatch?id=${this.export_batch}`
-        console.log(ls_url8)
-
-        //ESOP資料(全部的其他遊戲)
+        //所有的ESOP資料
         await axios
-          .get(ls_url8)
+          .get(ls_url3)
           .then((response) => (this.esop_all = response.data))
           .catch(function (error) {
             console.log(error)
           })
 
         this.generateData()
-        //this.setPdata();
 
         this.timeOutID = setTimeout(() => {
           this.listLoading = false

@@ -38,6 +38,7 @@
     <vab-query-form>
       <vab-query-form-left-panel>
         <el-button icon="el-icon-plus" type="primary" @click="sortCompany">公司排序</el-button>
+        <el-button type="primary" @click="showTheRest">檢查編排狀況</el-button>
       </vab-query-form-left-panel>
     </vab-query-form>
 
@@ -105,6 +106,7 @@
     <company-edit ref="cedit" @trigger-handleQuery="handleQuery" />
     <product-edit ref="pedit" @trigger-handleQuery="handleQuery" />
     <export-view ref="export" />
+    <show-rest ref="showrest" />
   </div>
 </template>
 
@@ -113,6 +115,7 @@
   import CompanyEdit from './components/CompanyEdit'
   import ProductEdit from './components/ProductEdit'
   import ExportView from './components/ExportView'
+  import ShowRest from './components/ShowRest'
 
   export default {
     name: 'View',
@@ -120,6 +123,7 @@
       CompanyEdit,
       ProductEdit,
       ExportView,
+      ShowRest,
     },
     filters: {},
     data() {
@@ -368,7 +372,7 @@
               this.list[i]['count_exportall'] = this.list_count[j]['count_exportALL']
               this.list[i]['count_all'] = this.list_count[j]['count_ALL']
 
-              if (this.list[i]['count_export'] == this.list[i]['count_exportall']) {
+              if (this.list[i]['count_export'] >= this.list[i]['count_exportall']) {
                 this.list[i]['count_chk'] = true
               }
               break
@@ -381,7 +385,6 @@
         console.log('setRepeatChk')
 
         let ls_url4 = `${this.url4}/getbybatch?id=${this.queryForm.batch}`
-        console.log(ls_url4)
 
         //ESP資料
         await axios
@@ -392,7 +395,6 @@
           })
 
         let ls_url5 = `${this.url5}/viewp/${this.queryForm.batch}`
-        console.log(ls_url5)
 
         //ESOP資料
         await axios
@@ -415,9 +417,6 @@
             }
           }
         }
-
-        console.log(ls_tmparray)
-        console.log(this.list)
 
         //標記含有重疊遊戲的公司
         for (let i = 0; i < this.list.length; i++) {
@@ -453,6 +452,15 @@
           alert('請先選擇批次')
         } else {
           this.$refs['export'].showEdit(this.queryForm.batch)
+        }
+      },
+
+      async showTheRest() {
+        console.log('showTheRest')
+        if (this.queryForm.batch === undefined || this.queryForm.batch === null || this.queryForm.batch === '') {
+          alert('請先選擇批次')
+        } else {
+          this.$refs['showrest'].showEdit(this.queryForm.batch)
         }
       },
     },

@@ -9,16 +9,26 @@
             <el-tag class="tagbtn" @click="show_saledate2">發售日</el-tag>
             <el-tag class="tagbtn" @click="show_series_btn">子分類</el-tag>
             <el-tag class="tagbtn" @click="fetchData">重整</el-tag>
-            <el-tag class="tagbtn" @click="list_sort">排序</el-tag>
+            <el-tag class="tagbtn" @click="show_sort_btn">排序</el-tag>
           </div>
         </div>
-        <div v-show="series_btn_show" class="div_search_left">
-          <el-tag class="tagbtn" effect="dark" @click="notify_series('add')">新增</el-tag>
-          <el-tag class="tagbtn" effect="dark" @click="notify_series('update')">改名</el-tag>
-          <el-tag class="tagbtn" effect="dark" @click="delete_series">刪除</el-tag>
+        <div v-show="search_btn_show" class="div_search_left2">
+          <input v-model="left_search" autocomplete="off" class="input_search" placeholder="請輸入代號或遊戲名稱" type="text" />
+          <span class="input_search_icon"><i class="el-input__icon el-icon-search"></i></span>
+        </div>
+        <div v-show="series_btn_show || sort_btn_show" class="div_search_left">
+          <div v-show="series_btn_show">
+            <el-tag class="tagbtn" effect="dark" @click="notify_series('add')">新增</el-tag>
+            <el-tag class="tagbtn" effect="dark" @click="notify_series('update')">改名</el-tag>
+            <el-tag class="tagbtn" effect="dark" @click="delete_series">刪除</el-tag>
+          </div>
+          <div v-show="sort_btn_show">
+            <el-tag class="tagbtn" @click="list_sort">一般排序</el-tag>
+            <el-tag class="tagbtn" @click="list_sort2">公司>時間排序</el-tag>
+          </div>
         </div>
         <div class="div_item_group2">
-          <div v-for="(series, sindex) in slist" :key="series.esos_Id" class="div_item2">
+          <div v-for="(series, sindex) in filterItem2" :key="series.esos_Id" class="div_item2">
             <div
               class="div_item_left"
               draggable="true"
@@ -129,6 +139,7 @@
 
         eso: {}, //Export_set_Company資料
         esop: [], //Export_set_Product資料
+        esop_all: [], //Export_set_Product資料(全部)
         esp: [], //Export_set_Product資料
 
         //右側選單
@@ -141,11 +152,14 @@
         slist: [], //子分類
         left_select_series: '', //選擇子分類
         left_select_product: [], //選擇遊戲
+        left_search: '',
 
         series_notify_show: false,
         series_notify_type: '',
         series_input_name: '',
         series_btn_show: false,
+        sort_btn_show: false,
+        search_btn_show: true,
         esc_show: true,
         saledate_show: false,
         saledate_show2: false,
@@ -200,6 +214,29 @@
         }
 
         return DataArry
+      },
+      filterItem2() {
+        return this.slist.map((item) => {
+          // 確保 product_data 是陣列，如果搜尋為空則顯示所有資料
+          if (Array.isArray(item.product_data)) {
+            return {
+              ...item,
+              product_data: item.product_data.filter((product) => {
+                const search = this.left_search.toLowerCase()
+                return (
+                  search === '' || // 如果 left_search 為空顯示所有
+                  product.p_Name.toLowerCase().includes(search) ||
+                  product.p_id.toLowerCase().includes(search) ||
+                  product.sale_Date.substring(0, 4).includes(search) ||
+                  product.c_Name.toLowerCase().includes(search) ||
+                  product.c_id.toLowerCase().includes(search)
+                )
+              }),
+            }
+          } else {
+            return item
+          }
+        })
       },
       series_btn_show2() {
         return this.right_select.length > 0 ? true : false
@@ -260,8 +297,8 @@
 
         //右邊選單 篩選
         for (let i = 0; i < this.product.length; i++) {
-          for (let j = 0; j < this.esop.length; j++) {
-            if (this.product[i]['p_id'] == this.esop[j]['p_id']) {
+          for (let j = 0; j < this.esop_all.length; j++) {
+            if (this.product[i]['p_id'] == this.esop_all[j]['p_id']) {
               lb_chk = true //標記有重複
             }
           }
@@ -278,13 +315,13 @@
         }
 
         console.log(this.slist)
-        console.log(this.esop)
+        console.log(this.esop_all)
 
         //若一般列表已有, 則標記起來
         for (let i = 0; i < this.esp.length; i++) {
-          for (let j = 0; j < this.esop.length; j++) {
-            if (this.esp[i]['p_id'] == this.esop[j]['p_id']) {
-              this.esop[j]['esp_chk'] = true
+          for (let j = 0; j < this.esop_all.length; j++) {
+            if (this.esp[i]['p_id'] == this.esop_all[j]['p_id']) {
+              this.esop_all[j]['esp_chk'] = true
             }
           }
         }
@@ -341,7 +378,7 @@
         let ls_url4 = `${this.url4}?id=${eso_id}`
         console.log(ls_url4)
 
-        //ESOP資料
+        //ESOP資料(隸屬此年分範圍)
         await axios
           .get(ls_url4)
           .then((response) => (this.esop = response.data))
@@ -356,6 +393,17 @@
         await axios
           .get(ls_url5)
           .then((response) => (this.esp = response.data))
+          .catch(function (error) {
+            console.log(error)
+          })
+
+        let ls_url6 = `${this.url4}/getbybatch?id=${this.export_batch}`
+        console.log(ls_url6)
+
+        //ESOP資料(全部的其他遊戲)
+        await axios
+          .get(ls_url6)
+          .then((response) => (this.esop_all = response.data))
           .catch(function (error) {
             console.log(error)
           })
@@ -456,10 +504,26 @@
         if (this.series_btn_show) {
           this.series_btn_show = false
           this.esc_show = true
+          this.search_btn_show = true
         } else {
           this.series_btn_show = true
           this.esc_show = false
+          this.search_btn_show = false
         }
+        this.sort_btn_show = false
+      },
+
+      show_sort_btn() {
+        console.log('show_sort_btn')
+        if (this.sort_btn_show) {
+          this.sort_btn_show = false
+          this.search_btn_show = true
+        } else {
+          this.sort_btn_show = true
+          this.search_btn_show = false
+        }
+        this.series_btn_show = false
+        this.esc_show = true
       },
 
       notify_series(type) {
@@ -483,6 +547,38 @@
             for (let j = 0; j < this.slist[i]['product_data'].length; j++) {
               this.slist[i]['product_data'][j].sort = j + 1
               this.slist[i]['product_data'][j]['esos_id'] = esos_id
+            }
+          }
+        }
+        this.save()
+
+        setTimeout(() => {
+          this.fetchData()
+        }, 500)
+      },
+
+      //重新排序()
+      list_sort2() {
+        console.log('list_sort2')
+        console.log(this.slist)
+
+        for (let i = 0; i < this.slist.length; i++) {
+          let esos_id = this.slist[i]['esos_Id']
+          this.slist[i].sort = i + 1
+
+          let data = this.slist[i]['product_data']
+
+          if (data.length > 0) {
+            //排序: 公司優先、發售日次要
+            data.sort((a, b) => {
+              if (a.c_Name < b.c_Name) return -1
+              if (a.c_Name > b.c_Name) return 1
+              return a.sale_Date - b.sale_Date // c_Name 相同時，根據sale_Date排序
+            })
+
+            for (let j = 0; j < data.length; j++) {
+              data[j].sort = j + 1
+              data[j]['esos_id'] = esos_id
             }
           }
         }
@@ -923,7 +1019,8 @@
     justify-content: flex-end;
   }
 
-  .div_search {
+  .div_search,
+  .div_search_left2 {
     height: 20px;
     padding: 8px;
     display: flex;
