@@ -397,7 +397,7 @@
             data[i].t_team.indexOf('"') != -1 ||
             data[i].remark.indexOf('"') != -1
           ) {
-            ls_error += `${data[i].c_id} ${data[i].p_Name}\n`
+            ls_error += `${data[i].c_Name} ${data[i].p_Name}\n`
           }
 
           lastid = data[i].c_id

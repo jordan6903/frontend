@@ -14,7 +14,19 @@
       </div>
 
       <div class="div_out">
-        <div class="div_float2">
+        <div class="div_middle2">
+          <span>漢化相關遊戲總數: {{ count.product_all }}</span>
+          <span>已編排總數: {{ count.esp_all + count.esop_all }}</span>
+          <span>編排率: {{ (((count.esp_all + count.esop_all) * 100) / count.product_all).toFixed(2) }}%</span>
+          <br />
+          <span>官方中文化: {{ count.complete1 }}</span>
+          <span>漢化完成: {{ count.complete2 }}</span>
+          <span>部分漢化: {{ count.partcomplete }}</span>
+          <span>雲翻漢化: {{ count.machine }}</span>
+          <span>其他: {{ count.other }}</span>
+        </div>
+
+        <div class="div_float3">
           <div class="div_title">
             <span>漏掉的遊戲</span>
             <div>
@@ -27,6 +39,7 @@
             <el-tag class="tagbtn" effect="dark" @click="delete_series">刪除</el-tag>
           </div>
           <div class="div_item_group2">
+            <div v-if="rest_product.length == 0" style="display: flex; justify-content: center"><span>查無遊戲</span></div>
             <div v-for="item in rest_product" :key="item.id" class="div_item2">
               <span tyle="color: #2448ff">{{ item.c_Name }}&nbsp;</span>
               {{ item.name }}
@@ -34,22 +47,7 @@
           </div>
         </div>
 
-        <div class="div_middle">
-          <div class="div_arrow">
-            <div class="arrow">
-              <button class="el-button el-button--primary" type="button" @click="insert_product">
-                <span><i class="el-icon-arrow-left"></i></span>
-              </button>
-            </div>
-            <div class="arrow">
-              <button class="el-button el-button--primary" type="button" @click="delete_product">
-                <span><i class="el-icon-arrow-right"></i></span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="div_float2">
+        <div class="div_float3">
           <div class="div_title">
             <span>重複的遊戲</span>
             <div>
@@ -96,6 +94,9 @@
         esp_all: [], //Export_set_Product資料
         esop_all: [], //Export_set_Product資料(全部)
 
+        esp_all_TT: [],
+        esop_all_TT: [],
+
         rest_product: [], //漏掉的遊戲
         repeat_product: {
           esp: [],
@@ -115,6 +116,18 @@
         slist: [], //子分類
         left_select_series: '', //選擇子分類
         left_select_product: [], //選擇遊戲
+
+        //
+        count: {
+          product_all: 0,
+          esp_all: 0,
+          esop_all: 0,
+          complete1: 0,
+          complete2: 0,
+          partcomplete: 0,
+          machine: 0,
+          other: 0,
+        },
 
         //顯示與其他設定
         series_notify_show: false,
@@ -192,7 +205,7 @@
       async generateData() {
         console.log('generateData')
 
-        this.rest_product = this.product_all
+        this.rest_product = JSON.parse(JSON.stringify(this.product_all)) //深拷貝
 
         console.log(this.rest_product)
         console.log(this.esp_all)
@@ -217,8 +230,8 @@
           }
         }
 
-        let data1 = this.esp_all
-        let data2 = this.esop_all
+        let data1 = JSON.parse(JSON.stringify(this.esp_all))
+        let data2 = JSON.parse(JSON.stringify(this.esop_all))
 
         //重複的遊戲
         const pidCount1 = {},
@@ -263,6 +276,61 @@
         console.log(this.repeat_product.vs)
       },
 
+      async generateDataTT() {
+        console.log('generateDataTT')
+
+        this.esp_all_TT = JSON.parse(JSON.stringify(this.esp_all)) //深拷貝
+        this.esop_all_TT = JSON.parse(JSON.stringify(this.esop_all)) //深拷貝
+
+        //官方中文化
+        let data0_1 = this.esp_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 3))
+        let data0_2 = this.esop_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 3))
+        this.count.complete1 = data0_1.length + data0_2.length
+        console.log('官方中文化')
+        console.log(data0_1)
+        console.log(data0_2)
+
+        //漢化完成
+        let data1_1 = this.esp_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 1 && tt.type_id !== 3))
+        let data1_2 = this.esop_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 1 && tt.type_id !== 3))
+        this.count.complete2 = data1_1.length + data1_2.length
+        console.log('漢化完成')
+        console.log(data1_1)
+        console.log(data1_2)
+
+        //部分漢化
+        let data2_1 = this.esp_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 6 && tt.type_id !== 1 && tt.type_id !== 3))
+        let data2_2 = this.esop_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 6 && tt.type_id !== 1 && tt.type_id !== 3))
+        this.count.partcomplete = data2_1.length + data2_2.length
+        console.log('部分漢化')
+        console.log(data2_1)
+        console.log(data2_2)
+
+        //雲翻漢化
+        let data3_1 = this.esp_all_TT.filter((item) =>
+          item.tT_type.some((tt) => tt.type_id === 8 && tt.type_id !== 1 && tt.type_id !== 3 && tt.type_id !== 6)
+        )
+        let data3_2 = this.esop_all_TT.filter((item) =>
+          item.tT_type.some((tt) => tt.type_id === 8 && tt.type_id !== 1 && tt.type_id !== 3 && tt.type_id !== 6)
+        )
+        this.count.machine = data3_1.length + data3_2.length
+        console.log('雲翻漢化')
+        console.log(data3_1)
+        console.log(data3_2)
+
+        //剩餘的其他資料
+        let data4_1 = this.esp_all_TT.filter((item) =>
+          item.tT_type.some((tt) => tt.type_id !== 1 && tt.type_id !== 3 && tt.type_id !== 6 && tt.type_id !== 8)
+        )
+        let data4_2 = this.esop_all_TT.filter((item) =>
+          item.tT_type.some((tt) => tt.type_id !== 1 && tt.type_id !== 3 && tt.type_id !== 6 && tt.type_id !== 8)
+        )
+        console.log('剩餘的其他資料')
+        console.log(data4_1)
+        console.log(data4_2)
+        this.count.other = data4_1.length + data4_2.length
+      },
+
       //讀取api
       async fetchData() {
         console.log('fetchData')
@@ -295,7 +363,12 @@
             console.log(error)
           })
 
+        this.count.product_all = this.product_all.length
+        this.count.esp_all = this.esp_all.length
+        this.count.esop_all = this.esop_all.length
+
         this.generateData()
+        this.generateDataTT()
 
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
@@ -1003,21 +1076,22 @@
     margin-bottom: 30px;
   }
 
-  .div_float2 {
+  .div_float3 {
     height: 600px;
-    width: 500px;
+    width: 400px;
     background: whitesmoke;
     border-radius: 8px;
     border: 1px #c0c4cc solid;
   }
 
-  .div_middle {
+  .div_middle2 {
     height: 500px;
-    width: 100px;
+    width: 300px;
+    font-size: 20px;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-content: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
   }
 
   .div_arrow {

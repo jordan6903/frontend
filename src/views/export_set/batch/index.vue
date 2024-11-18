@@ -40,13 +40,14 @@
       <el-table-column show-overflow-tooltip type="selection" width="55" />
       <el-table-column label="代碼" prop="export_batch" show-overflow-tooltip sortable width="95" />
       <el-table-column label="敘述" prop="content" show-overflow-tooltip />
+      <el-table-column label="已編排總數" prop="count_exportALL" show-overflow-tooltip />
+      <el-table-column label="可編排總數" prop="count_all" show-overflow-tooltip />
       <el-table-column label="啟用" prop="use_yn" show-overflow-tooltip>
         <template #default="{ row }">
           <vab-icon v-show="row.use_yn" :icon="['fas', 'check']" />
           <vab-icon v-show="!row.use_yn" :icon="['fas', 'times']" />
         </template>
       </el-table-column>
-      <el-table-column label="更新時間" prop="upd_date" show-overflow-tooltip sortable width="200" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
           <el-button type="text" @click="handleEdit(row)">編輯</el-button>
@@ -77,10 +78,12 @@
     data() {
       return {
         url: 'http://localhost:5252/api/export_set_batch',
+        url2: 'http://localhost:5252/api/product/getforother',
         return_msg: '',
         return_success: '',
         imgShow: true,
         list: [],
+        product_all: [],
         listLoading: true,
         total: 0,
         background: true,
@@ -190,11 +193,22 @@
         this.fetchData()
       },
 
+      async generateData() {
+        console.log('generateData')
+
+        for (let i = 0; i < this.list.length; i++) {
+          this.list[i]['count_exportALL'] += this.list[i]['count_export1']
+          this.list[i]['count_exportALL'] += this.list[i]['count_export2']
+          this.list[i]['count_all'] = this.product_all.length
+        }
+      },
+
       async fetchData() {
         console.log('===methods fetchData')
         this.listLoading = true
 
         let ls_url = `${this.url}?`
+        let ls_url2 = `${this.url2}`
 
         if (this.queryForm.use_yn_set) {
           ls_url += 'UseYN=Y&'
@@ -215,6 +229,16 @@
           .catch(function (error) {
             console.log(error)
           })
+
+        //抓出所有跟漢化相關的遊戲
+        await axios
+          .get(ls_url2)
+          .then((response) => (this.product_all = response.data))
+          .catch(function (error) {
+            console.log(error)
+          })
+
+        this.generateData()
 
         this.timeOutID = setTimeout(() => {
           this.listLoading = false

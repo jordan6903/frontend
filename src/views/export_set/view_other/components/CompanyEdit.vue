@@ -77,13 +77,14 @@
         console.log('===save')
         this.$refs['form'].validate(async (valid) => {
           if (valid) {
+            this.form.series_data = ''
+
             if (!this.form_lock) {
               console.log('新增')
               this.title = '新增'
               this.url = 'http://localhost:5252/api/export_set_other'
               this.params = this.form
 
-              console.log(this.form)
               console.log(this.params)
 
               await axios
@@ -99,7 +100,6 @@
               this.url = `http://localhost:5252/api/export_set_other/${this.form.id}`
               this.params = this.form
 
-              console.log(this.form)
               console.log(this.params)
 
               await axios

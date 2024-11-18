@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<style>
+textarea {
+	width: 500px;
+	height: 300px;
+}
+</style>
+<body>
+
+<textarea id="textarea1"></textarea> <br><br>
+<textarea id="textarea2"></textarea> <br><br>
+<button onclick="compare()">開始比對</button>
+
+</body>
+</html>
+
+<script>
+
+function compare(){
+	console.log("compare");
+
+	let val1 = $("#textarea1").val();
+	let val2 = $("#textarea2").val();
+	const array1 = val1.split("\n");
+	const array2 = val2.split("\n");
+
+	
+
+	for(let i=array1.length - 1; i >= 0; i--){
+		if(array1[i] === "") array1.splice(i,1);
+	}
+
+	for(let i=array2.length - 1; i >= 0; i--){
+		if(array2[i] === "") array2.splice(i,1);
+	}
+
+	let result = array1.filter((e)=>{
+	  return array2.indexOf(e) === -1
+	})
+
+	console.log(result);
+}
+
+</script>

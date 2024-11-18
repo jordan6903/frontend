@@ -19,6 +19,7 @@
             <span>存入遊戲</span>
             <div>
               <el-tag class="tagbtn" effect="dark" @click="notify_title">修改標頭</el-tag>
+              <el-tag class="tagbtn" @click="show_TT2">漢化</el-tag>
               <el-tag class="tagbtn" @click="show_detail2">顯示細節</el-tag>
               <el-tag class="tagbtn" @click="show_series_btn">子分類</el-tag>
               <el-tag class="tagbtn" @click="fetchData">重整</el-tag>
@@ -68,6 +69,15 @@
                   <span v-if="product.eso_chk" style="color: red">(其他已有)&nbsp;</span>
                   <span v-if="detail_show2" style="color: darkred">{{ filteredDate(product.sale_Date) }}&nbsp;</span>
                   <span v-if="detail_show2" style="color: #2448ff">{{ product.c_Name }}&nbsp;</span>
+                  <div v-if="TT_show2" class="TT_div">
+                    <el-tag
+                      v-for="(tt, index) in product.tT_type"
+                      :key="`${product.id}-${tt.type_id}-${index}`"
+                      :type="filteredTTtype(tt.type_id)"
+                    >
+                      {{ tt.type_Name }}
+                    </el-tag>
+                  </div>
                   {{ product.sort }} - {{ product.p_Name }}
                 </label>
               </div>
@@ -102,31 +112,41 @@
             <div>
               <el-tag v-show="allProduct_show" class="tagbtn" @click="show_allProduct_other">隱藏其他</el-tag>
               <el-tag class="tagbtn" @click="show_allProduct">其他列表</el-tag>
+
+              <el-tooltip placement="top">
+                <div slot="content">
+                  <a @click="TT_show_modify(0)">顯示全部</a>
+                  |
+                  <a @click="TT_show_modify(1)">只顯示已漢化</a>
+                </div>
+                <el-tag class="tagbtn" @click="show_TT">漢化</el-tag>
+              </el-tooltip>
+
               <el-tag class="tagbtn" @click="show_detail">顯示細節</el-tag>
               <el-tag class="tagbtn" @click="selectAll">全選</el-tag>
-              <el-tag class="tagbtn" @click="selectClear">清空勾選</el-tag>
+              <el-tag class="tagbtn" @click="selectClear">清空</el-tag>
             </div>
           </div>
           <div class="div_search">
             <input v-model="right_search" autocomplete="off" class="input_search" placeholder="請輸入代號或遊戲名稱" type="text" />
             <span class="input_search_icon"><i class="el-input__icon el-icon-search"></i></span>
           </div>
-          <div v-show="!allProduct_show" class="div_item_group2">
+          <div class="div_item_group2">
             <div v-for="product in filterItem" :key="product.p_id" class="div_item_right">
               <input v-model="right_select" class="checkbox" name="list" type="checkbox" :value="product.p_id" />
               <label :for="product.p_id" :title="product.name">
                 <span v-if="product.eso_chk" style="color: red">(其他已有)</span>
-                {{ product.name }}
-              </label>
-            </div>
-          </div>
-          <div v-show="allProduct_show" class="div_item_group2">
-            <div v-for="product in filterItemAll" :key="product.p_id" class="div_item_right">
-              <input v-model="right_select" class="checkbox" name="list" type="checkbox" :value="product.p_id" />
-              <label :for="product.p_id" :title="product.name">
-                <span v-if="product.eso_chk" style="color: red">(其他已有)&nbsp;</span>
                 <span v-if="detail_show" style="color: darkred">{{ filteredDate(product.sale_date) }}&nbsp;</span>
                 <span v-if="detail_show" style="color: #2448ff">{{ product.company_name }}&nbsp;</span>
+                <div v-if="TT_show" class="TT_div">
+                  <el-tag
+                    v-for="(tt, index) in product.tT_type"
+                    :key="`${product.id}-${tt.type_id}-${index}`"
+                    :type="filteredTTtype(tt.type_id)"
+                  >
+                    {{ tt.type_Name }}
+                  </el-tag>
+                </div>
                 {{ product.name }}
               </label>
             </div>
@@ -185,6 +205,9 @@
 
         detail_show: false,
         detail_show2: false,
+        TT_show: false,
+        TT_show2: false,
+        TT_show_modify_type: 0,
 
         //中間插入sort
         insert_row: 0,
@@ -206,21 +229,19 @@
     },
     computed: {
       filterItem() {
-        let DataArry = this.item.filter(
-          (item) =>
-            item.name.toLowerCase().includes(this.right_search.toLowerCase()) ||
-            item.p_id.toLowerCase().includes(this.right_search.toLowerCase())
-        )
-        return DataArry
-      },
-      filterItemAll() {
-        let DataArry = this.item_all.filter(
+        let DataArry = this.item
+        if (this.allProduct_show) DataArry = this.item_all
+
+        DataArry = DataArry.filter(
           (item) =>
             (item.name.toLowerCase().includes(this.right_search.toLowerCase()) ||
               item.p_id.toLowerCase().includes(this.right_search.toLowerCase()) ||
               item.c_id.toLowerCase().includes(this.right_search.toLowerCase()) ||
               item.company_name.toLowerCase().includes(this.right_search.toLowerCase())) &&
-            (this.allProduct_other_show ? item.eso_chk === false : true)
+            (this.allProduct_other_show ? item.eso_chk === false : true) &&
+            (this.TT_show_modify_type == 0
+              ? 1 == 1
+              : item.tT_type.some((tt) => tt.type_id === 1 || tt.type_id === 3 || tt.type_id === 6 || tt.type_id === 8))
         )
         return DataArry
       },
@@ -253,6 +274,25 @@
         // 轉成日期形式
         date = `${date.substring(0, 4)}-${date.substring(4, 6)}-${date.substring(6, 8)}`
         return date
+      },
+
+      filteredTTtype(id) {
+        if (id == 3) {
+          //官方中文化
+          return ''
+        } else if (id == 1) {
+          //漢化完成
+          return 'success'
+        } else if (id == 6) {
+          //部分漢化
+          return 'warning'
+        } else if (id == 8) {
+          //雲翻漢化
+          return 'danger'
+        } else {
+          //其他
+          return 'info'
+        }
       },
 
       async setSeriesName() {
@@ -472,7 +512,7 @@
         this.$emit('trigger-handleQuery')
       },
       show_detail() {
-        console.log('show_company')
+        console.log('show_detail')
         if (this.detail_show) {
           this.detail_show = false
         } else {
@@ -487,10 +527,30 @@
           this.detail_show2 = true
         }
       },
+      show_TT() {
+        console.log('show_TT')
+        if (this.TT_show) {
+          this.TT_show = false
+        } else {
+          this.TT_show = true
+        }
+      },
+      show_TT2() {
+        console.log('show_TT2')
+        if (this.TT_show2) {
+          this.TT_show2 = false
+        } else {
+          this.TT_show2 = true
+        }
+      },
+      TT_show_modify(type) {
+        console.log(`TT_show_modify type: ${type}`)
+        this.TT_show_modify_type = type
+      },
       selectAll() {
         this.right_select = []
-        for (let i = 0; i < this.item.length; i++) {
-          this.right_select.push(this.item[i]['p_id'])
+        for (let i = 0; i < this.filterItem.length; i++) {
+          this.right_select.push(this.filterItem[i]['p_id'])
         }
       },
       selectClear() {
@@ -1259,5 +1319,13 @@
     overflow: hidden;
     background: white;
     padding: 5px 0px 5px 10px;
+  }
+
+  .tt_type {
+    background: grey;
+  }
+
+  .TT_div {
+    display: inline;
   }
 </style>
