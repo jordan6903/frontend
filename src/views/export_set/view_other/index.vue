@@ -24,7 +24,7 @@
           <br />
           <el-form-item label="輸出分類">
             <el-select v-model="export_type" placeholder="請選擇分類">
-              <el-option v-for="type in list_type" :key="type.id" :label="type.id + ' ' + type.name" :value="type.id" />
+              <el-option v-for="type in list_type" :key="type.id" :label="type.id + ' ' + type.name" :value="type.name" />
             </el-select>
           </el-form-item>
           &nbsp;&nbsp;&nbsp;&nbsp;
@@ -98,6 +98,7 @@
     <company-edit ref="cedit" @trigger-handleQuery="handleQuery" />
     <product-edit ref="pedit" @trigger-handleQuery="handleQuery" />
     <export-view ref="export" />
+    <export-view2 ref="export2" />
   </div>
 </template>
 
@@ -106,6 +107,7 @@
   import CompanyEdit from './components/CompanyEdit'
   import ProductEdit from './components/ProductEdit'
   import ExportView from './components/ExportView'
+  import ExportView2 from './components/ExportView2'
 
   export default {
     name: 'ViewOther',
@@ -113,6 +115,7 @@
       CompanyEdit,
       ProductEdit,
       ExportView,
+      ExportView2,
     },
     filters: {},
     data() {
@@ -429,8 +432,15 @@
         console.log('export_start')
         if (this.queryForm.batch === undefined || this.queryForm.batch === null || this.queryForm.batch === '') {
           alert('請先選擇批次')
+        } else if (this.export_type === undefined || this.export_type === null || this.export_type === '') {
+          alert('請先選擇輸出分類')
         } else {
-          this.$refs['export'].showEdit(this.queryForm.batch)
+          console.log(this.export_type)
+          if (this.export_type == '試算表') {
+            this.$refs['export'].showEdit(this.queryForm.batch)
+          } else if (this.export_type == '巴哈') {
+            this.$refs['export2'].showEdit(this.queryForm.batch)
+          }
         }
       },
     },

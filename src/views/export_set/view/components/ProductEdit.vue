@@ -19,8 +19,9 @@
             <span>存入遊戲</span>
             <div>
               <el-tag class="tagbtn" effect="dark" @click="notify_title">修改標頭</el-tag>
+              <el-tag class="tagbtn" @click="show_doujin2">同人</el-tag>
               <el-tag class="tagbtn" @click="show_TT2">漢化</el-tag>
-              <el-tag class="tagbtn" @click="show_detail2">顯示細節</el-tag>
+              <el-tag class="tagbtn" @click="show_detail2">細節</el-tag>
               <el-tag class="tagbtn" @click="show_series_btn">子分類</el-tag>
               <el-tag class="tagbtn" @click="fetchData">重整</el-tag>
               <el-tag class="tagbtn" @click="list_sort">排序</el-tag>
@@ -78,6 +79,11 @@
                       {{ tt.type_Name }}
                     </el-tag>
                   </div>
+                  <div v-if="doujin_show2" class="TT_div">
+                    <el-tag :type="filteredDoujintype(product.p_id.substring(0, 1))">
+                      {{ product.p_id.substring(0, 1) == 'B' ? '同人' : '商業' }}
+                    </el-tag>
+                  </div>
                   {{ product.sort }} - {{ product.p_Name }}
                 </label>
               </div>
@@ -115,6 +121,16 @@
 
               <el-tooltip placement="top">
                 <div slot="content">
+                  <a @click="doujin_show_modify('')">顯示全部</a>
+                  |
+                  <a @click="doujin_show_modify('A')">只顯示商業作</a>
+                  |
+                  <a @click="doujin_show_modify('B')">只顯示同人作</a>
+                </div>
+                <el-tag class="tagbtn" @click="show_doujin">同人</el-tag>
+              </el-tooltip>
+              <el-tooltip placement="top">
+                <div slot="content">
                   <a @click="TT_show_modify(0)">顯示全部</a>
                   |
                   <a @click="TT_show_modify(1)">只顯示已漢化</a>
@@ -122,7 +138,7 @@
                 <el-tag class="tagbtn" @click="show_TT">漢化</el-tag>
               </el-tooltip>
 
-              <el-tag class="tagbtn" @click="show_detail">顯示細節</el-tag>
+              <el-tag class="tagbtn" @click="show_detail">細節</el-tag>
               <el-tag class="tagbtn" @click="selectAll">全選</el-tag>
               <el-tag class="tagbtn" @click="selectClear">清空</el-tag>
             </div>
@@ -145,6 +161,11 @@
                     :type="filteredTTtype(tt.type_id)"
                   >
                     {{ tt.type_Name }}
+                  </el-tag>
+                </div>
+                <div v-if="doujin_show" class="TT_div">
+                  <el-tag :type="filteredDoujintype(product.p_id.substring(0, 1))">
+                    {{ product.p_id.substring(0, 1) == 'B' ? '同人' : '商業' }}
                   </el-tag>
                 </div>
                 {{ product.name }}
@@ -208,6 +229,9 @@
         TT_show: false,
         TT_show2: false,
         TT_show_modify_type: 0,
+        doujin_show: false,
+        doujin_show2: false,
+        doujin_show_modify_type: '',
 
         //中間插入sort
         insert_row: 0,
@@ -241,7 +265,10 @@
             (this.allProduct_other_show ? item.eso_chk === false : true) &&
             (this.TT_show_modify_type == 0
               ? 1 == 1
-              : item.tT_type.some((tt) => tt.type_id === 1 || tt.type_id === 3 || tt.type_id === 6 || tt.type_id === 8))
+              : item.tT_type.some((tt) => tt.type_id === 1 || tt.type_id === 3 || tt.type_id === 6 || tt.type_id === 8)) &&
+            (this.doujin_show_modify_type == '' ||
+              (this.doujin_show_modify_type == 'A' && item.p_id.substring(0, 1) == 'A') ||
+              (this.doujin_show_modify_type == 'B' && item.p_id.substring(0, 1) == 'B'))
         )
         return DataArry
       },
@@ -288,6 +315,19 @@
           return 'warning'
         } else if (id == 8) {
           //雲翻漢化
+          return 'danger'
+        } else {
+          //其他
+          return 'info'
+        }
+      },
+
+      filteredDoujintype(type) {
+        if (type == 'A') {
+          //商業
+          return ''
+        } else if (type == 'B') {
+          //同人
           return 'danger'
         } else {
           //其他
@@ -546,6 +586,26 @@
       TT_show_modify(type) {
         console.log(`TT_show_modify type: ${type}`)
         this.TT_show_modify_type = type
+      },
+      show_doujin() {
+        console.log('show_doujin')
+        if (this.doujin_show) {
+          this.doujin_show = false
+        } else {
+          this.doujin_show = true
+        }
+      },
+      show_doujin2() {
+        console.log('show_doujin2')
+        if (this.doujin_show2) {
+          this.doujin_show2 = false
+        } else {
+          this.doujin_show2 = true
+        }
+      },
+      doujin_show_modify(type) {
+        console.log(`doujin_show_modify type: ${type}`)
+        this.doujin_show_modify_type = type
       },
       selectAll() {
         this.right_select = []

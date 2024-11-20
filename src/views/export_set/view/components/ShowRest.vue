@@ -66,7 +66,8 @@
             </div>
             <div class="div_item2">
               <div class="div_item_left">交互比對</div>
-              <div v-for="item in repeat_product.vs" :key="item.p_Name" class="div_product_data">{{ item.p_Name }}</div>
+              <div v-for="item in repeat_product.vs1" :key="item.p_Name" class="div_product_data">{{ item.p_Name }}</div>
+              <div v-for="item in repeat_product.vs2" :key="item.p_Name" class="div_product_data">{{ item.p_Name }}</div>
             </div>
           </div>
         </div>
@@ -101,7 +102,8 @@
         repeat_product: {
           esp: [],
           esop: [],
-          vs: [], //交叉比對
+          vs1: [], //交叉比對
+          vs2: [], //交叉比對
         }, //重複的遊戲
 
         //右側選單
@@ -230,8 +232,10 @@
           }
         }
 
-        let data1 = JSON.parse(JSON.stringify(this.esp_all))
-        let data2 = JSON.parse(JSON.stringify(this.esop_all))
+        let data1_1 = JSON.parse(JSON.stringify(this.esp_all))
+        let data1_2 = JSON.parse(JSON.stringify(this.esp_all))
+        let data2_1 = JSON.parse(JSON.stringify(this.esop_all))
+        let data2_2 = JSON.parse(JSON.stringify(this.esop_all))
 
         //重複的遊戲
         const pidCount1 = {},
@@ -240,40 +244,67 @@
           duplicates2 = []
 
         //esp自我檢查
-        data1.forEach((item) => {
+        data1_1.forEach((item) => {
           const p_id = item.p_id
           pidCount1[p_id] = (pidCount1[p_id] || 0) + 1
         })
 
-        data1.forEach((item) => {
+        data1_1.forEach((item) => {
           if (pidCount1[item.p_id] > 1) {
             duplicates1.push(item.p_Name)
           }
         })
 
+        data1_2.forEach((item) => {
+          const p_Name = item.p_Name
+          pidCount1[p_Name] = (pidCount1[p_Name] || 0) + 1
+        })
+
+        data1_2.forEach((item) => {
+          if (pidCount1[item.p_Name] > 1) {
+            duplicates1.push(item.p_Name)
+          }
+        })
+
         //esop自我檢查
-        data2.forEach((item) => {
+        data2_1.forEach((item) => {
           const p_id = item.p_id
           pidCount2[p_id] = (pidCount2[p_id] || 0) + 1
         })
 
-        data2.forEach((item) => {
+        data2_1.forEach((item) => {
           if (pidCount2[item.p_id] > 1) {
             duplicates2.push(item.p_Name)
           }
         })
 
+        data2_2.forEach((item) => {
+          const p_Name = item.p_Name
+          pidCount2[p_Name] = (pidCount2[p_Name] || 0) + 1
+        })
+
+        data2_2.forEach((item) => {
+          if (pidCount2[item.p_Name] > 1) {
+            duplicates2.push(item.p_Name)
+          }
+        })
+
         //esp跟esop交互檢查
-        const pidInData2 = new Set(data2.map((item) => item.p_id))
-        const duplicates = data1.filter((item) => pidInData2.has(item.p_id))
+        const pidInData2_1 = new Set(data2_1.map((item) => item.p_id))
+        const duplicates_1 = data1_1.filter((item) => pidInData2_1.has(item.p_id))
+
+        const pidInData2_2 = new Set(data2_2.map((item) => item.p_Name))
+        const duplicates_2 = data1_2.filter((item) => pidInData2_2.has(item.p_Name))
 
         this.repeat_product.esp = duplicates1
         this.repeat_product.esop = duplicates2
-        this.repeat_product.vs = duplicates
+        this.repeat_product.vs1 = duplicates_1
+        this.repeat_product.vs2 = duplicates_2
 
         console.log(this.repeat_product.esp)
         console.log(this.repeat_product.esop)
-        console.log(this.repeat_product.vs)
+        console.log(this.repeat_product.vs1)
+        console.log(this.repeat_product.vs2)
       },
 
       async generateDataTT() {
@@ -286,48 +317,60 @@
         let data0_1 = this.esp_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 3))
         let data0_2 = this.esop_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 3))
         this.count.complete1 = data0_1.length + data0_2.length
-        console.log('官方中文化')
-        console.log(data0_1)
-        console.log(data0_2)
+        // console.log('官方中文化')
+        // console.log(data0_1)
+        // console.log(data0_2)
 
         //漢化完成
-        let data1_1 = this.esp_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 1 && tt.type_id !== 3))
-        let data1_2 = this.esop_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 1 && tt.type_id !== 3))
+        let data1_1 = this.esp_all_TT.filter(
+          (item) => !item.tT_type.some((tt) => tt.type_id === 3) && item.tT_type.some((tt) => tt.type_id === 1)
+        )
+        let data1_2 = this.esop_all_TT.filter(
+          (item) => !item.tT_type.some((tt) => tt.type_id === 3) && item.tT_type.some((tt) => tt.type_id === 1)
+        )
         this.count.complete2 = data1_1.length + data1_2.length
-        console.log('漢化完成')
-        console.log(data1_1)
-        console.log(data1_2)
+        // console.log('漢化完成')
+        // console.log(data1_1)
+        // console.log(data1_2)
 
         //部分漢化
-        let data2_1 = this.esp_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 6 && tt.type_id !== 1 && tt.type_id !== 3))
-        let data2_2 = this.esop_all_TT.filter((item) => item.tT_type.some((tt) => tt.type_id === 6 && tt.type_id !== 1 && tt.type_id !== 3))
+        let data2_1 = this.esp_all_TT.filter(
+          (item) => !item.tT_type.some((tt) => tt.type_id === 3 || tt.type_id === 1) && item.tT_type.some((tt) => tt.type_id === 6)
+        )
+        let data2_2 = this.esop_all_TT.filter(
+          (item) => !item.tT_type.some((tt) => tt.type_id === 3 || tt.type_id === 1) && item.tT_type.some((tt) => tt.type_id === 6)
+        )
         this.count.partcomplete = data2_1.length + data2_2.length
-        console.log('部分漢化')
-        console.log(data2_1)
-        console.log(data2_2)
+        // console.log('部分漢化')
+        // console.log(data2_1)
+        // console.log(data2_2)
 
         //雲翻漢化
-        let data3_1 = this.esp_all_TT.filter((item) =>
-          item.tT_type.some((tt) => tt.type_id === 8 && tt.type_id !== 1 && tt.type_id !== 3 && tt.type_id !== 6)
+        let data3_1 = this.esp_all_TT.filter(
+          (item) =>
+            !item.tT_type.some((tt) => tt.type_id === 3 || tt.type_id === 1 || tt.type_id === 6) &&
+            item.tT_type.some((tt) => tt.type_id === 8)
         )
-        let data3_2 = this.esop_all_TT.filter((item) =>
-          item.tT_type.some((tt) => tt.type_id === 8 && tt.type_id !== 1 && tt.type_id !== 3 && tt.type_id !== 6)
+        let data3_2 = this.esop_all_TT.filter(
+          (item) =>
+            !item.tT_type.some((tt) => tt.type_id === 3 || tt.type_id === 1 || tt.type_id === 6) &&
+            item.tT_type.some((tt) => tt.type_id === 8)
         )
         this.count.machine = data3_1.length + data3_2.length
-        console.log('雲翻漢化')
-        console.log(data3_1)
-        console.log(data3_2)
+        // console.log('雲翻漢化')
+        // console.log(data3_1)
+        // console.log(data3_2)
 
         //剩餘的其他資料
-        let data4_1 = this.esp_all_TT.filter((item) =>
-          item.tT_type.some((tt) => tt.type_id !== 1 && tt.type_id !== 3 && tt.type_id !== 6 && tt.type_id !== 8)
+        let data4_1 = this.esp_all_TT.filter(
+          (item) => !item.tT_type.some((tt) => tt.type_id === 1 || tt.type_id === 3 || tt.type_id === 6 || tt.type_id === 8)
         )
-        let data4_2 = this.esop_all_TT.filter((item) =>
-          item.tT_type.some((tt) => tt.type_id !== 1 && tt.type_id !== 3 && tt.type_id !== 6 && tt.type_id !== 8)
+        let data4_2 = this.esop_all_TT.filter(
+          (item) => !item.tT_type.some((tt) => tt.type_id === 1 || tt.type_id === 3 || tt.type_id === 6 || tt.type_id === 8)
         )
-        console.log('剩餘的其他資料')
-        console.log(data4_1)
-        console.log(data4_2)
+        // console.log('剩餘的其他資料')
+        // console.log(data4_1)
+        // console.log(data4_2)
         this.count.other = data4_1.length + data4_2.length
       },
 

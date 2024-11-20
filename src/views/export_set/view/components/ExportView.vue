@@ -302,47 +302,6 @@
         return date
       },
 
-      async save() {
-        console.log('save')
-
-        if (this.list.length == 0) {
-          alert('請先加入公司再存檔')
-        } else {
-          console.log(this.list)
-
-          for (let i = 0; i < this.list.length; i++) {
-            this.update_form.push({
-              id: this.list[i]['id'],
-              sort: this.list[i]['sort'],
-            })
-          }
-
-          console.log(this.update_form)
-
-          await axios
-            .put(this.url3, this.update_form)
-            .then((response) => (this.return_msg = response.data.message))
-            .catch(function (error) {
-              // 请求失败处理
-              console.log(error)
-            })
-
-          //拆解
-          let msg_array = this.return_msg.split('#')
-          this.return_success = msg_array[0]
-          this.return_msg = msg_array[1]
-
-          this.$baseMessage(this.return_msg, 'success')
-
-          //成功就重新讀取
-          if (this.return_success == 'Y') {
-            this.clear()
-            //this.fetchData();
-            //this.dialogFormVisible = false;
-          }
-        }
-      },
-
       async export_file() {
         console.log('export_file')
         //console.log(this.clist);
