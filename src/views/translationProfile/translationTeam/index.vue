@@ -32,7 +32,7 @@
       </vab-query-form-left-panel>
     </vab-query-form>
 
-    <el-table :data="list" :height="height" :stripe="true" style="width: 100%">
+    <el-table ref="mainTable" :data="list" :height="height" :stripe="true" style="width: 100%">
       <el-table-column style="background: whitesmoke" type="expand">
         <template #default="props">
           <h2 style="margin-left: 50px; display: inline">漢化組列</h2>
@@ -247,6 +247,15 @@
         this.fetchData()
       },
 
+      // 展開所有行
+      expandAllRows() {
+        this.$nextTick(() => {
+          this.list.forEach((row) => {
+            this.$refs.mainTable.toggleRowExpansion(row, true)
+          })
+        })
+      },
+
       async fetchData() {
         console.log('===methods fetchData')
         this.listLoading = true
@@ -307,6 +316,10 @@
         this.total = this.list.length
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
+
+          if (this.queryForm.csearchword != '' || this.queryForm.psearchword != '' || this.queryForm.tsearchword != '') {
+            this.expandAllRows()
+          }
         }, 500)
       },
 
