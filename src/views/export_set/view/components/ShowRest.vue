@@ -1,6 +1,6 @@
 <template>
   <el-dialog :title="title" :visible.sync="dialogFormVisible" width="1200px" @close="close">
-    <div class="div_out_out">
+    <div v-loading="listLoading" class="div_out_out">
       <div v-show="titleInput_show" class="div_title_input">
         <el-col :span="1" style="height: 32px; display: flex; align-items: center; justify-content: center">
           <span style="font-size: 16px">標頭</span>
@@ -160,6 +160,7 @@
         form_type: [],
         title: '',
         dialogFormVisible: false,
+        listLoading: true,
       }
     },
     computed: {},

@@ -69,8 +69,7 @@
             <el-table-column label="排序" prop="sort" show-overflow-tooltip width="50" />
             <el-table-column label="操作" show-overflow-tooltip width="180px">
               <template #default="{ row }">
-                <el-button type="text" @click="handleEdit(row)">編輯</el-button>
-                <el-button type="text" @click="handleDelete(row)">刪除</el-button>
+                <el-button type="text" @click="handleAddWord(row)">編輯html</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -99,6 +98,7 @@
     <product-edit ref="pedit" @trigger-handleQuery="handleQuery" />
     <export-view ref="export" />
     <export-view2 ref="export2" />
+    <addword-edit ref="addwordedit" @trigger-handleQuery="handleQuery" />
   </div>
 </template>
 
@@ -108,6 +108,7 @@
   import ProductEdit from './components/ProductEdit'
   import ExportView from './components/ExportView'
   import ExportView2 from './components/ExportView2'
+  import AddwordEdit from './components/AddwordEdit'
 
   export default {
     name: 'ViewOther',
@@ -116,6 +117,7 @@
       ProductEdit,
       ExportView,
       ExportView2,
+      AddwordEdit,
     },
     filters: {},
     data() {
@@ -186,6 +188,11 @@
       handleEdit(row) {
         console.log('===methods handleEdit')
         this.$refs['edit'].showEdit(row)
+      },
+      handleAddWord(row) {
+        console.log('handleAddWord')
+        console.log(row)
+        this.$refs['addwordedit'].showEdit(row)
       },
       handleDelete(row) {
         console.log('===methods handleDelete')

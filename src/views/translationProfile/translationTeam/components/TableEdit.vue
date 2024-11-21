@@ -1,6 +1,6 @@
 <template>
-  <el-dialog :title="title" :visible.sync="dialogFormVisible" width="500px" @close="close">
-    <el-form ref="form" label-width="80px" :model="form" :rules="rules">
+  <el-dialog :title="title" :visible.sync="dialogFormVisible" width="800px" @close="close">
+    <el-form ref="form" label-width="100px" :model="form" :rules="rules">
       <!-- 新增 -->
       <template v-if="!form_lock">
         <!-- 公司company -->
@@ -76,9 +76,17 @@
       </el-form-item>
 
       <el-form-item v-show="newT_show" label="新增漢化組" prop="newCompany">
-        <el-input v-model.trim="newT.t_id" autocomplete="off" maxlength="6" placeholder="代號" />
-        <el-input v-model.trim="newT.name" autocomplete="off" maxlength="100" placeholder="漢化組名" />
-        <el-button type="primary" @click="saveNewT">新漢化組存檔</el-button>
+        <el-col :span="16">
+          <el-input v-model.trim="newT.t_id" autocomplete="off" maxlength="6" placeholder="代號" />
+        </el-col>
+        &nbsp;
+        <span style="color: red">建議輸入: {{ maxTid }}</span>
+        <el-col :span="16">
+          <el-input v-model.trim="newT.name" autocomplete="off" maxlength="100" placeholder="漢化組名" />
+        </el-col>
+        <el-col :span="16">
+          <el-button type="primary" @click="saveNewT">新漢化組存檔</el-button>
+        </el-col>
       </el-form-item>
 
       <el-form-item label="備註" prop="remark">
@@ -99,7 +107,7 @@
     name: 'TableEdit',
     data() {
       return {
-        url: '',
+        url: 'http://localhost:5252/api/translation_team_info',
         insert_new: false,
         newT_show: false,
         params: '',
@@ -112,6 +120,7 @@
         csearchword: '',
         search_company: [],
         maxTbatch: 0,
+        maxTid: '',
         maxId: 0,
         form: {
           c_id: '',
@@ -235,12 +244,25 @@
 
         await this.getMaxTbatch()
       },
-      showTInput() {
+      async showTInput() {
         if (this.newT_show) {
           this.newT_show = false
         } else {
           this.newT_show = true
         }
+
+        let ls_url = 'http://localhost:5252/api/translation_team_info/getmaxtid'
+        await axios
+          .get(ls_url)
+          .then((response) => (this.maxTid = response.data))
+          .catch(function (error) {
+            console.log(error)
+          })
+
+        let ls_tmp = this.maxTid
+        ls_tmp = ls_tmp.substring(1, ls_tmp.length)
+        let li_tmp = parseInt(ls_tmp) + 1
+        this.maxTid = `T${li_tmp.toString()}`
       },
       close() {
         console.log('===close')

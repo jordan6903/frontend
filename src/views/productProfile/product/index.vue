@@ -80,12 +80,22 @@
       return {
         url: 'http://localhost:5252/api/product',
         url2: 'http://localhost:5252/api/company',
+        url3: 'http://localhost:5252/api/translation_team',
+        url4: 'http://localhost:5252/api/translation_team_batch',
+        url5: 'http://localhost:5252/api/export_set_product',
+        url6: 'http://localhost:5252/api/export_set_other_product',
         return_msg: '',
         return_success: '',
         imgShow: true,
         list: [],
         list_type: [],
         imageList: [],
+
+        tt: [],
+        ttb: [],
+        esp: [],
+        esop: [],
+
         listLoading: true,
         layout: 'total, sizes, prev, pager, next, jumper',
         total: 0,
@@ -138,6 +148,65 @@
         console.log(row.p_id)
         if (row.p_id) {
           this.$baseConfirm('你確定要刪除當前項嗎?', null, async () => {
+            let ls_error_word = ''
+            let ls_url6 = `${this.url6}/deletechk/${row.p_id}`
+            let ls_url5 = `${this.url5}/deletechk/${row.p_id}`
+            let ls_url4 = `${this.url4}/deletechk/${row.p_id}`
+            let ls_url3 = `${this.url3}/deletechk/${row.p_id}`
+
+            //export_set_other_product
+            await axios
+              .get(ls_url6)
+              .then((response) => (this.esop = response.data))
+              .catch(function (error) {
+                console.log(error)
+              })
+
+            //export_set_product
+            await axios
+              .get(ls_url5)
+              .then((response) => (this.esp = response.data))
+              .catch(function (error) {
+                console.log(error)
+              })
+
+            //translation_team_batch
+            await axios
+              .get(ls_url4)
+              .then((response) => (this.ttb = response.data))
+              .catch(function (error) {
+                console.log(error)
+              })
+
+            //translation_team
+            await axios
+              .get(ls_url3)
+              .then((response) => (this.tt = response.data))
+              .catch(function (error) {
+                console.log(error)
+              })
+
+            if (this.tt.length > 0) {
+              ls_error_word += '漢化區尚有資料存在(translation_team)、'
+            }
+
+            if (this.ttb.length > 0) {
+              ls_error_word += '漢化區尚有資料存在(translation_team_batch)、'
+            }
+
+            if (this.esp.length > 0) {
+              ls_error_word += '輸出區尚有資料存在(export_set_product)、'
+            }
+
+            if (this.esop.length > 0) {
+              ls_error_word += '輸出區尚有資料存在(export_set_other_product)、'
+            }
+
+            if (ls_error_word != '') {
+              this.$baseAlert(ls_error_word)
+              return false
+            }
+
             let ls_url = this.url
             ls_url += `/${row.p_id}`
 

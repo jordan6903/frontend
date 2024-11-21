@@ -1,8 +1,12 @@
 <template>
-  <el-dialog :title="title" :visible.sync="dialogFormVisible" width="500px" @close="close">
+  <el-dialog :title="title" :visible.sync="dialogFormVisible" width="600px" @close="close">
     <el-form ref="form" label-width="80px" :model="form" :rules="rules">
       <el-form-item label="代碼" prop="staff_id">
-        <el-input v-model.trim="form.staff_id" autocomplete="off" :disabled="form_lock" maxlength="10" />
+        <el-col :span="16">
+          <el-input v-model.trim="form.staff_id" autocomplete="off" :disabled="form_lock" maxlength="10" />
+        </el-col>
+        &nbsp;
+        <span v-if="!form_lock" style="color: red">最後id: {{ maxStaffid }}</span>
       </el-form-item>
       <el-form-item label="名稱" prop="name">
         <el-input v-model.trim="form.name" autocomplete="off" maxlength="100" />
@@ -29,6 +33,7 @@
         params: '',
         return_msg: '',
         return_success: '',
+        maxStaffid: '',
         form: {
           staff_id: '',
           name: '',
@@ -46,12 +51,20 @@
     },
     created() {},
     methods: {
-      showEdit(row) {
+      async showEdit(row) {
         console.log('===showEdit')
         console.log(row)
         if (!row) {
           this.title = '新增'
           this.form_lock = false
+
+          //取得最新的id
+          await axios
+            .get('http://localhost:5252/api/staff_info/getmaxstaffid')
+            .then((response) => (this.maxStaffid = response.data))
+            .catch(function (error) {
+              console.log(error)
+            })
         } else {
           this.title = '編輯'
           this.form = Object.assign({}, row)

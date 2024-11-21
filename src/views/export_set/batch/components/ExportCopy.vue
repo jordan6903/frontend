@@ -319,7 +319,7 @@
         console.log(ls_companyid)
         console.log(ls_companycid)
 
-        let ls_url2 = `${this.url2}`
+        let ls_url2 = `${this.url2}/copy`
 
         //series跟product
         for (let i = 0; i < ls_companycid.length; i++) {
@@ -333,6 +333,8 @@
                   Name: series_data[k]['name'],
                   Use_yn: series_data[k]['use_yn'],
                   Sort: series_data[k]['sort'],
+                  Add_word: series_data[k]['add_word'],
+                  Add_word_Use_yn: series_data[k]['add_word_Use_yn'],
                 }
 
                 await axios

@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="title" :visible.sync="dialogFormVisible" width="500px" @close="close">
+  <el-dialog :title="title" :visible.sync="dialogFormVisible" width="600px" @close="close">
     <el-form ref="form" label-width="80px" :model="form" :rules="rules">
       <template v-if="!form_lock">
         <el-form-item label="遊戲搜尋">
@@ -54,9 +54,17 @@
         </el-form-item>
 
         <el-form-item v-show="newStaff_show" label="新增人員" prop="newStaff">
-          <el-input v-model.trim="newStaff.staff_id" autocomplete="off" maxlength="10" placeholder="代號" />
-          <el-input v-model.trim="newStaff.name" autocomplete="off" maxlength="100" placeholder="人名" />
-          <el-button type="primary" @click="saveNewStaff">新人員存檔</el-button>
+          <el-col :span="16">
+            <el-input v-model.trim="newStaff.staff_id" autocomplete="off" maxlength="10" placeholder="代號" />
+          </el-col>
+          &nbsp;
+          <span v-if="!form_lock" style="color: red">最後id: {{ maxStaffid }}</span>
+          <el-col :span="16">
+            <el-input v-model.trim="newStaff.name" autocomplete="off" maxlength="100" placeholder="人名" />
+          </el-col>
+          <el-col :span="16">
+            <el-button type="primary" @click="saveNewStaff">新人員存檔</el-button>
+          </el-col>
         </el-form-item>
       </template>
 
@@ -108,6 +116,7 @@
         search_product: [],
         searchword2: '',
         search_staff: [],
+        maxStaffid: '',
         form: {
           p_id: '',
           staff_id: '',
@@ -150,12 +159,20 @@
         this.form_type = list_type.type
         this.form_info = list_type.info
       },
-      showStaffInput() {
+      async showStaffInput() {
         if (this.newStaff_show) {
           this.newStaff_show = false
         } else {
           this.newStaff_show = true
         }
+
+        //取得最新的id
+        await axios
+          .get('http://localhost:5252/api/staff_info/getmaxstaffid')
+          .then((response) => (this.maxStaffid = response.data))
+          .catch(function (error) {
+            console.log(error)
+          })
       },
       close() {
         console.log('===close')

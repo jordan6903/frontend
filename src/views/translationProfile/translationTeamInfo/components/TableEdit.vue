@@ -2,7 +2,11 @@
   <el-dialog :title="title" :visible.sync="dialogFormVisible" width="500px" @close="close">
     <el-form ref="form" label-width="80px" :model="form" :rules="rules">
       <el-form-item label="代號" prop="t_id">
-        <el-input v-model.trim="form.t_id" autocomplete="off" :disabled="form_lock" maxlength="6" @input="toUpperCase($event)" />
+        <el-col :span="16">
+          <el-input v-model.trim="form.t_id" autocomplete="off" :disabled="form_lock" maxlength="6" @input="toUpperCase($event)" />
+        </el-col>
+        &nbsp;
+        <span v-if="!form_lock" style="color: red">建議輸入: {{ maxTid }}</span>
       </el-form-item>
       <el-form-item label="名稱" prop="name">
         <el-input v-model.trim="form.name" autocomplete="off" maxlength="100" />
@@ -28,6 +32,7 @@
         url: '',
         params: '',
         return_msg: [],
+        maxTid: '',
         form: {
           t_id: '',
           name: '',
@@ -44,12 +49,25 @@
     },
     created() {},
     methods: {
-      showEdit(row) {
+      async showEdit(row) {
         console.log('===showEdit')
         console.log(row)
         if (!row) {
           this.title = '新增'
           this.form_lock = false
+
+          let ls_url = 'http://localhost:5252/api/translation_team_info/getmaxtid'
+          await axios
+            .get(ls_url)
+            .then((response) => (this.maxTid = response.data))
+            .catch(function (error) {
+              console.log(error)
+            })
+
+          let ls_tmp = this.maxTid
+          ls_tmp = ls_tmp.substring(1, ls_tmp.length)
+          let li_tmp = parseInt(ls_tmp) + 1
+          this.maxTid = `T${li_tmp.toString()}`
         } else {
           this.title = '編輯'
           this.form = Object.assign({}, row)

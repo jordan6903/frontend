@@ -12,6 +12,10 @@
       <br />
 
       <div v-for="series in company.series_data" :key="series.id">
+        <div v-if="series.add_word_Use_yn" style="white-space: pre-wrap">
+          <br />
+          {{ series.add_word }}
+        </div>
         <ul v-if="series.name == ''">
           <li v-for="product in series.p_data" :key="product.id">
             {{ product.p_Name }}
@@ -325,6 +329,10 @@
           let series = data[i]['series_data']
 
           for (let j = 0; j < series.length; j++) {
+            if (series[j]['add_word_Use_yn']) {
+              content += `${series[j]['add_word']}\n`
+            }
+
             let product = series[j]['p_data']
 
             if (series[j]['name'] == '') {

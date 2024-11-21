@@ -247,7 +247,7 @@
         this.fetchData()
       },
 
-      // 展開所有行
+      // 展開所有摺疊的列
       expandAllRows() {
         this.$nextTick(() => {
           this.list.forEach((row) => {
@@ -317,6 +317,7 @@
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
 
+          //有搜尋條件才全部展開, 不然會卡
           if (this.queryForm.csearchword != '' || this.queryForm.psearchword != '' || this.queryForm.tsearchword != '') {
             this.expandAllRows()
           }
