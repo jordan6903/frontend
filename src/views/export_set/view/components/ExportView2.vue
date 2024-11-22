@@ -306,20 +306,29 @@
           title = '',
           content = '',
           remark = ''
-        let ls_error = ''
+        let ls_error = '',
+          ls_url1 = '',
+          ls_url2 = ''
 
         for (let i = 0; i < data.length; i++) {
           title = ''
           content = ''
           remark = ''
+          ls_url1 = ''
+          ls_url2 = ''
 
           //表頭
-          title += `[hr][url=${data[i]['url']}][size=5][b]`
+          if (data[i]['url'] != '' && data[i]['url'] != null && data[i]['url'] != undefined) {
+            ls_url1 = `[url=${data[i]['url']}]`
+            ls_url2 = '[/url]'
+          }
+
+          title += `[hr]${ls_url1}[size=5][b]`
           title += data[i]['c_Name']
           if (data[i]['c_Name_origin'] != '') {
             title += `(${data[i]['c_Name_origin']})`
           }
-          title += '[/b][/size][/url]\n'
+          title += `[/b][/size]${ls_url2}\n`
           if (data[i]['c_Intro'] != '') {
             title += `${data[i]['c_Intro']}\n`
           }

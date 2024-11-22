@@ -98,6 +98,7 @@
     <product-edit ref="pedit" @trigger-handleQuery="handleQuery" />
     <export-view ref="export" />
     <export-view2 ref="export2" />
+    <export-view3 ref="export3" />
     <addword-edit ref="addwordedit" @trigger-handleQuery="handleQuery" />
   </div>
 </template>
@@ -108,6 +109,7 @@
   import ProductEdit from './components/ProductEdit'
   import ExportView from './components/ExportView'
   import ExportView2 from './components/ExportView2'
+  import ExportView3 from './components/ExportView3'
   import AddwordEdit from './components/AddwordEdit'
 
   export default {
@@ -117,6 +119,7 @@
       ProductEdit,
       ExportView,
       ExportView2,
+      ExportView3,
       AddwordEdit,
     },
     filters: {},
@@ -447,6 +450,8 @@
             this.$refs['export'].showEdit(this.queryForm.batch)
           } else if (this.export_type == '巴哈') {
             this.$refs['export2'].showEdit(this.queryForm.batch)
+          } else if (this.export_type == 'Blogger') {
+            this.$refs['export3'].showEdit(this.queryForm.batch)
           }
         }
       },
