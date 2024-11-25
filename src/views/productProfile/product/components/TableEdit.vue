@@ -3,7 +3,7 @@
     <el-collapse v-model="collapseActive" @change="collapseChange">
       <!-- 基本資料Product -->
       <el-collapse-item name="1" title="一、基本資料">
-        <el-form ref="form" label-width="80px" :model="form" :rules="rules">
+        <el-form ref="form" label-width="100px" :model="form" :rules="rules">
           <!-- 公司company -->
           <el-form-item label="公司" prop="c_id">
             <el-select v-model="form.c_id" filterable placeholder="請選擇公司">
@@ -58,6 +58,9 @@
           </el-form-item>
           <el-form-item label="中文名稱" prop="c_Name">
             <el-input v-model.trim="form.c_Name" autocomplete="off" maxlength="200" />
+          </el-form-item>
+          <el-form-item v-if="!form_lock" label="初回發售日">
+            <el-input v-model.trim="form_other.release.sale_Date" autocomplete="off" maxlength="8" />
           </el-form-item>
           <el-form-item label="介紹" prop="content">
             <el-input v-model="form.content" autocomplete="off" maxlength="300" type="textarea" />
@@ -315,7 +318,7 @@
               |
               <a @click="deletePic(data.id)">刪除</a>
             </span>
-            <el-image :src="data.url" style="width: 100px; height: 100px" />
+            <el-image :preview-src-list="srcList" :src="data.url" style="width: 100px; height: 100px" />
           </div>
         </div>
       </el-collapse-item>
@@ -582,6 +585,8 @@
         },
         company_type: [],
 
+        srcList: [],
+
         //基本資料-存檔
         form: {
           p_id: '',
@@ -799,6 +804,8 @@
           //this.getScore() //評分
           //this.getStaff() //製作人員
         }
+        this.maxPid = ''
+        this.search_type = []
         this.form_type = list_type
         this.dialogFormVisible = true
 
@@ -944,6 +951,8 @@
           .catch(function (error) {
             console.log(error)
           })
+
+        this.srcList = this.data_Pic.map((item) => item.url) //圖庫
       },
       async getWebsite() {
         let ls_url = `${this.url_other.url4}`
@@ -2029,6 +2038,40 @@
                   // 请求失败处理
                   console.log(error)
                 })
+
+              //拆解
+              let msg_array = this.return_msg.split('#')
+              this.return_success = msg_array[0]
+              this.return_msg = msg_array[1]
+
+              this.$baseMessage(this.return_msg, 'success')
+
+              if (this.return_success == 'Y') {
+                if (
+                  this.form_other.release.sale_Date === '' ||
+                  this.form_other.release.sale_Date === null ||
+                  this.form_other.release.sale_Date === undefined
+                ) {
+                  //do nothing
+                } else {
+                  let ls_url = 'http://localhost:5252/api/product_release_day'
+
+                  this.form_other.release.p_id = this.form.p_id
+                  this.form_other.release.official_First = true
+
+                  console.log(this.form_other.release)
+
+                  await axios
+                    .post(ls_url, this.form_other.release)
+                    .then((response) => (this.return_msg = response.data.message))
+                    .catch(function (error) {
+                      // 请求失败处理
+                      console.log(error)
+                    })
+
+                  this.form_other.release = this.pure_other.release
+                }
+              }
             } else {
               console.log('編輯')
               this.title = '編輯'

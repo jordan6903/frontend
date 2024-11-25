@@ -44,6 +44,14 @@
           >
             新增
           </el-button>
+          <el-button
+            icon="el-icon-plus"
+            style="margin-left: 10px; margin-bottom: 10px; display: inline"
+            type="warning"
+            @click="handleUrl(props.row)"
+          >
+            編輯網址
+          </el-button>
           <el-table :border="true" :data="props.row.t_batch_data" style="margin-left: 50px; margin-bottom: 20px">
             <el-table-column label="批次" prop="t_batch" show-overflow-tooltip width="95" />
             <el-table-column label="漢化組">
@@ -80,17 +88,20 @@
       @size-change="handleSizeChange"
     />
     <table-edit ref="edit" @trigger-handleQuery="handleQuery" />
+    <url-edit ref="urledit" />
   </div>
 </template>
 
 <script>
   import { doDelete, getList } from '@/api/table'
   import TableEdit from './components/TableEdit'
+  import UrlEdit from './components/UrlEdit'
 
   export default {
     name: 'TranslationTeam',
     components: {
       TableEdit,
+      UrlEdit,
     },
     filters: {
       statusFilter(status) {
@@ -168,6 +179,11 @@
         console.log('===methods handleAdd2')
         console.log(row)
         this.$refs['edit'].showAdd(row, this.list_type)
+      },
+      handleUrl(row) {
+        console.log('===methods handleUrl')
+        console.log(row)
+        this.$refs['urledit'].showEdit(row)
       },
       handleEdit(row) {
         console.log('===methods handleEdit')
