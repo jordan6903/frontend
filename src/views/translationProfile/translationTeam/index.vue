@@ -16,19 +16,19 @@
             <el-button icon="el-icon-search" native-type="submit" type="primary" @click="handleQuery">查詢</el-button>
           </el-form-item>
           &nbsp;&nbsp;&nbsp;&nbsp;
-          <el-form-item label="分類">
+          <el-form-item>
             <el-select v-model="queryForm.type" placeholder="請選擇分類">
               <el-option label="% 全選" value="%" />
               <el-option v-for="type in list_type.type" :key="type.type_id" :label="type.type_id + ' ' + type.name" :value="type.type_id" />
             </el-select>
           </el-form-item>
+          <el-form-item label="展開細節">
+            <el-switch v-model="queryForm.open_detail" @change="expandAllRows" />
+          </el-form-item>
+          <el-form-item>
+            <el-button icon="el-icon-plus" type="danger" @click="handleAdd">新增</el-button>
+          </el-form-item>
         </el-form>
-      </vab-query-form-left-panel>
-    </vab-query-form>
-
-    <vab-query-form>
-      <vab-query-form-left-panel>
-        <el-button icon="el-icon-plus" type="primary" @click="handleAdd">新增</el-button>
       </vab-query-form-left-panel>
     </vab-query-form>
 
@@ -74,8 +74,20 @@
         </template>
       </el-table-column>
       <el-table-column label="公司" prop="c_Name" show-overflow-tooltip sortable width="150" />
-      <el-table-column label="遊戲名稱" prop="p_Name" show-overflow-tooltip />
-      <el-table-column label="中文名稱" prop="p_CName" show-overflow-tooltip />
+      <el-table-column label="遊戲名稱" prop="p_Name" show-overflow-tooltip width="300" />
+      <el-table-column label="中文名稱" prop="p_CName" show-overflow-tooltip width="300" />
+
+      <el-table-column label="漢化狀況">
+        <template #default="scope">
+          <div v-html="scope.row.t_batch_data_show"></div>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="網址">
+        <template #default="scope">
+          <div v-html="scope.row.url_data_show"></div>
+        </template>
+      </el-table-column>
     </el-table>
 
     <el-pagination
@@ -117,10 +129,12 @@
       return {
         url: 'http://localhost:5252/api/translation_team',
         url2: 'http://localhost:5252/api/translation_team_batch',
+        url3: 'http://localhost:5252/api/product_website',
         url_type: {
           url1: 'http://localhost:5252/api/translation_team_info',
           url2: 'http://localhost:5252/api/translation_team_type',
         },
+        return_data: '',
         return_msg: '',
         return_success: '',
         imgShow: true,
@@ -129,6 +143,7 @@
           info: [],
           type: [],
         },
+        UrlList: [],
         imageList: [],
         listLoading: true,
         layout: 'total, sizes, prev, pager, next, jumper',
@@ -143,6 +158,7 @@
           psearchword: '',
           tsearchword: '',
           type: '',
+          open_detail: false,
         },
         timeOutID: null,
       }
@@ -265,29 +281,39 @@
 
       // 展開所有摺疊的列
       expandAllRows() {
-        this.$nextTick(() => {
-          this.list.forEach((row) => {
-            this.$refs.mainTable.toggleRowExpansion(row, true)
+        if (this.queryForm.open_detail) {
+          this.$nextTick(() => {
+            this.list.forEach((row) => {
+              this.$refs.mainTable.toggleRowExpansion(row, true)
+            })
           })
-        })
+        } else {
+          this.$nextTick(() => {
+            this.list.forEach((row) => {
+              this.$refs.mainTable.toggleRowExpansion(row, false)
+            })
+          })
+        }
       },
 
       async fetchData() {
         console.log('===methods fetchData')
         this.listLoading = true
 
-        let ls_url = `${this.url}?`
+        let ls_url = `${this.url}/mainpage?`
+
+        ls_url += `page=${this.queryForm.pageNo}&pageSize=${this.queryForm.pageSize}`
 
         if (this.queryForm.csearchword != '') {
-          ls_url += `c_search=${this.queryForm.csearchword}` + '&'
+          ls_url += `&c_search=${this.queryForm.csearchword}`
         }
 
         if (this.queryForm.psearchword != '') {
-          ls_url += `p_search=${this.queryForm.psearchword}` + '&'
+          ls_url += `&p_search=${this.queryForm.psearchword}`
         }
 
         if (this.queryForm.tsearchword != '') {
-          ls_url += `t_search=${this.queryForm.tsearchword}` + '&'
+          ls_url += `&t_search=${this.queryForm.tsearchword}`
         }
 
         if (
@@ -297,18 +323,34 @@
           this.queryForm.type !== '%'
         ) {
           console.log(this.queryForm.type)
-          ls_url += `&type_id=${this.queryForm.type}` + '&'
+          ls_url += `&type_id=${this.queryForm.type}`
         }
-
-        ls_url = ls_url.substring(0, ls_url.length - 1)
 
         //主資料
         await axios
           .get(ls_url)
-          .then((response) => (this.list = response.data))
+          .then((response) => (this.return_data = response.data))
           .catch(function (error) {
             console.log(error)
           })
+
+        this.total = this.return_data.totalRecords
+        this.list = this.return_data.data
+
+        let ls_url3 = `${this.url3}/getfortt`
+        if (this.queryForm.psearchword != '') {
+          ls_url3 += `?searchword=${this.queryForm.psearchword}`
+        }
+
+        //網址資料
+        await axios
+          .get(ls_url3)
+          .then((response) => (this.UrlList = response.data))
+          .catch(function (error) {
+            console.log(error)
+          })
+
+        await this.generateData()
 
         let ls_url1 = `${this.url_type.url1}`
         let ls_url2 = `${this.url_type.url2}?UseYN=Y`
@@ -329,51 +371,110 @@
             console.log(error)
           })
 
-        this.total = this.list.length
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
 
-          //有搜尋條件才全部展開, 不然會卡
-          if (this.queryForm.csearchword != '' || this.queryForm.psearchword != '' || this.queryForm.tsearchword != '') {
+          if (this.queryForm.open_detail == true) {
             this.expandAllRows()
           }
         }, 500)
       },
+      async generateData() {
+        console.log('generateData') //Url_data_show
 
-      testMessage() {
-        console.log('===methods testMessage')
-        this.$baseMessage('test1', 'success')
-      },
+        for (let i = 0; i < this.list.length; i++) {
+          //放入漢化狀況
+          let tdata = this.list[i]['t_batch_data']
+          let tdata_show = ''
+          let tt_chk = []
 
-      testALert() {
-        console.log('===methods testALert')
-        this.$baseAlert('11')
-        this.$baseAlert('11', '自定義標題', () => {
-          /* 可以写回调; */
-        })
-        this.$baseAlert('11', null, () => {
-          /* 可以写回调; */
-        })
-      },
+          for (let j = 0; j < tdata.length; j++) {
+            let tt = tdata[j]['tT_info']
+            let tt_show = ''
 
-      testConfirm() {
-        console.log('===methods testConfirm')
-        this.$baseConfirm(
-          '你确定要执行该操作?',
-          null,
-          () => {
-            /* 可以写回调; */
-          },
-          () => {
-            /* 可以写回调; */
+            for (let k = 0; k < tt.length; k++) {
+              tt_show += `${tt[k]['t_Name']}×`
+            }
+            tt_show = tt_show.substring(0, tt_show.length - 1)
+
+            //一種只准出現一次
+            if (tt_chk.indexOf(tdata[j]['type_id']) == -1) {
+              tdata_show += `<span class="${this.filteredTTtype(tdata[j]['type_id'])}">${tdata[j]['type_Name']}</span>`
+              tt_chk.push(tdata[j]['type_id'])
+            }
           }
-        )
+          this.list[i]['t_batch_data_show'] = tdata_show
+
+          //放入網址
+          // let udata_show = '';
+          // for(let j=0; j < this.UrlList.length; j++){
+
+          // }
+          // this.list[i]['url_data_show'] = udata_show;
+        }
       },
 
-      testNotify() {
-        console.log('===methods testNotify')
-        this.$baseNotify('测试消息提示', 'test', 'success', 'bottom-right')
+      filteredTTtype(id) {
+        if (id == 3) {
+          //官方中文化
+          return 'tag'
+        } else if (id == 1) {
+          //漢化完成
+          return 'tag tag_success'
+        } else if (id == 6) {
+          //部分漢化
+          return 'tag tag_warning'
+        } else if (id == 8) {
+          //雲翻漢化
+          return 'tag tag_danger'
+        } else {
+          //其他
+          return 'tag tag_info'
+        }
       },
     },
   }
 </script>
+
+<style>
+  .tag {
+    background-color: #ecf5ff;
+    border-color: #d9ecff;
+    display: inline-block;
+    /*height: 32px;*/
+    /*padding: 0 10px;*/
+    padding: 0 5px;
+    /*line-height: 30px;*/
+    font-size: 12px;
+    color: #409eff;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 4px;
+    box-sizing: border-box;
+    white-space: nowrap;
+  }
+
+  .tag.tag_success {
+    background-color: #ecf8f3;
+    border-color: #d9f1e6;
+    color: #41b882;
+  }
+
+  .tag.tag_info {
+    background-color: #f4f4f5;
+    border-color: #e9e9eb;
+    color: #909399;
+  }
+
+  .tag.tag_warning {
+    background-color: #fff6e8;
+    border-color: #ffeed1;
+    color: #ffa91b;
+  }
+
+  .tag.tag_danger {
+    background-color: #feedeb;
+    border-color: #fddbd7;
+    color: #f34d37;
+  }
+</style>

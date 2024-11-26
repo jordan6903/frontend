@@ -84,6 +84,7 @@
         url4: 'http://localhost:5252/api/translation_team_batch',
         url5: 'http://localhost:5252/api/export_set_product',
         url6: 'http://localhost:5252/api/export_set_other_product',
+        return_data: '',
         return_msg: '',
         return_success: '',
         imgShow: true,
@@ -259,25 +260,28 @@
         console.log('===methods fetchData')
         this.listLoading = true
 
-        let ls_url = `${this.url}/limit?`
+        let ls_url = `${this.url}/mainpage?`
+
+        ls_url += `page=${this.queryForm.pageNo}&pageSize=${this.queryForm.pageSize}`
 
         if (this.queryForm.searchword != '') {
-          ls_url += `searchword=${this.queryForm.searchword}` + '&'
+          ls_url += `&searchword=${this.queryForm.searchword}`
         }
 
         if (this.queryForm.searchword2 != '') {
-          ls_url += `searchword2=${this.queryForm.searchword2}` + '&'
+          ls_url += `&searchword2=${this.queryForm.searchword2}`
         }
-
-        ls_url = ls_url.substring(0, ls_url.length - 1)
 
         //遊戲主資料
         await axios
           .get(ls_url)
-          .then((response) => (this.list = response.data))
+          .then((response) => (this.return_data = response.data))
           .catch(function (error) {
             console.log(error)
           })
+
+        this.total = this.return_data.totalRecords
+        this.list = this.return_data.data
 
         let ls_url2 = `${this.url2}`
 
@@ -289,7 +293,6 @@
             console.log(error)
           })
 
-        this.total = this.list.length
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
         }, 500)

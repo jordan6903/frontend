@@ -84,7 +84,7 @@
           </el-col>
           <br />
           <el-col :span="16">
-            <el-input v-model.trim="release.sale_Date" autocomplete="off" maxlength="8" placeholder="發售日" />
+            <el-input v-model.trim="release.sale_Date" autocomplete="off" placeholder="發售日" @input="formatDate" />
           </el-col>
           &nbsp;
           <el-button type="primary" @click="saveNewProduct">新遊戲存檔</el-button>
@@ -245,7 +245,7 @@
           c_Name: '',
           p_id: '',
           p_Name: '',
-          t_batch: 0,
+          t_batch: 1,
           type_id: 10,
           remark: '',
         },
@@ -284,6 +284,7 @@
         console.log('===showEdit')
         console.log(row)
         console.log(list_type)
+        this.clear() //清空
         if (!row) {
           this.title = '新增'
           this.form_lock = false
@@ -568,6 +569,13 @@
         ls_tmp2 = ls_tmp2.slice(-5)
         this.maxTid = `T${ls_tmp2.toString()}`
       },
+      clear() {
+        console.log('clear')
+        this.search_company = []
+        this.search_product = []
+
+        this.t_batch = this.maxTbatch + 1
+      },
       close() {
         console.log('===close')
         //this.$refs['form'].resetFields()
@@ -577,6 +585,15 @@
       },
       toUpperCase(event) {
         this.form.id = event.toUpperCase()
+      },
+      formatDate() {
+        //去掉除數字以外的字串
+        this.release.sale_Date = this.release.sale_Date.replace(/[^0-9]/g, '')
+
+        //字串長度大於8就縮短成8
+        if (this.release.sale_Date.length > 8) {
+          this.release.sale_Date = this.release.sale_Date.substring(0, 8)
+        }
       },
       async productQuery() {
         let ls_url = 'http://localhost:5252/api/product'
@@ -622,6 +639,8 @@
               console.log(error)
             })
         }
+
+        this.t_batch = this.maxTbatch + 1
       },
       async saveNewT() {
         console.log('===saveNewT')

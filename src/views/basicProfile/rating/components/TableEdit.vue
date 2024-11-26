@@ -35,6 +35,8 @@
       <el-form-item label="排序" prop="sort">
         <el-input v-model.number="form.sort" autocomplete="off" maxlength="3" type="number" />
       </el-form-item>
+      <el-form-item label="更新時間">{{ form.upd_date }}</el-form-item>
+      <el-form-item label="建立時間">{{ form.create_dt }}</el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button @click="close">取 消</el-button>
@@ -151,10 +153,8 @@
 
             //成功就關閉視窗
             if (this.return_success == 'Y') {
-              this.$refs['form'].resetFields()
               this.dialogFormVisible = false
-              this.$emit('fetch-data')
-              this.form = this.$options.data().form
+              this.$emit('trigger-handleQuery')
             }
           } else {
             return false

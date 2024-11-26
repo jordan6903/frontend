@@ -33,12 +33,6 @@
       <vab-query-form-left-panel>
         <el-button icon="el-icon-plus" type="primary" @click="handleAdd">新增</el-button>
         <el-button icon="el-icon-delete" type="danger" @click="handleDelete">删除</el-button>
-        <!--
-        <el-button type="primary" @click="testMessage">baseMessage</el-button>
-        <el-button type="primary" @click="testALert">baseAlert</el-button>
-        <el-button type="primary" @click="testConfirm">baseConfirm</el-button>
-        <el-button type="primary" @click="testNotify">baseNotify</el-button>
-        -->
       </vab-query-form-left-panel>
     </vab-query-form>
 
@@ -56,17 +50,7 @@
       <el-table-column label="分類" prop="type_Name" show-overflow-tooltip sortable width="150" />
       <el-table-column label="名稱" prop="name" show-overflow-tooltip />
       <el-table-column label="簡稱" prop="shortName" show-overflow-tooltip />
-      <el-table-column label="日文" prop="name_JP" show-overflow-tooltip />
-      <el-table-column label="英文" prop="name_EN" show-overflow-tooltip />
-      <el-table-column label="敘述" prop="content" show-overflow-tooltip />
-      <el-table-column label="啟用" prop="use_yn" show-overflow-tooltip>
-        <template #default="{ row }">
-          <vab-icon v-show="row.use_yn" :icon="['fas', 'check']" />
-          <vab-icon v-show="!row.use_yn" :icon="['fas', 'times']" />
-        </template>
-      </el-table-column>
       <el-table-column label="排序" prop="sort" show-overflow-tooltip sortable />
-      <el-table-column label="更新時間" prop="upd_date" show-overflow-tooltip sortable width="200" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
           <el-button type="text" @click="handleEdit(row)">編輯</el-button>
@@ -83,7 +67,7 @@
       @current-change="handleCurrentChange"
       @size-change="handleSizeChange"
     />
-    <table-edit ref="edit" />
+    <table-edit ref="edit" @trigger-handleQuery="handleQuery" />
   </div>
 </template>
 
@@ -96,20 +80,12 @@
     components: {
       TableEdit,
     },
-    filters: {
-      statusFilter(status) {
-        const statusMap = {
-          published: 'success',
-          draft: 'gray',
-          deleted: 'danger',
-        }
-        return statusMap[status]
-      },
-    },
+    filters: {},
     data() {
       return {
         url: 'http://localhost:5252/api/rating',
         url2: 'http://localhost:5252/api/rating_type',
+        return_data: '',
         return_msg: '',
         return_success: '',
         imgShow: true,
@@ -124,7 +100,7 @@
         elementLoadingText: '正在加載...',
         queryForm: {
           pageNo: 1,
-          pageSize: 20,
+          pageSize: 10,
           searchword: '',
           use_yn_set: true,
           type: '',
@@ -137,15 +113,6 @@
         return this.$baseTableHeight()
       },
     },
-    // watch: {
-    //   list (newVal, oldVal) {
-    //     console.log("===watch list");
-    //     this.list.forEach((item, index) => {
-    //       item.upd_date = this.datetimeformat(item.upd_date);
-    //       item.create_dt = this.datetimeformat(item.create_dt);
-    //     })
-    //   }
-    // },
     created() {
       console.log('===created')
       this.fetchData()
@@ -158,28 +125,8 @@
       console.log('===mounted')
     },
     methods: {
-      // datetimeformat(dateString){
-      //   if(!dateString){
-      //     return "";
-      //   }else{
-      //     const date = new Date(dateString);
-      //     const year = date.getFullYear();
-      //     const month = String(date.getMonth() + 1).padStart(2, '0');
-      //     const day = String(date.getDate()).padStart(2, '0');
-      //     const hours = String(date.getHours()).padStart(2, '0');
-      //     const minutes = String(date.getMinutes()).padStart(2, '0');
-      //     return `${year}-${month}-${day} ${hours}:${minutes}`;
-      //   }
-      // },
       tableSortChange() {
         console.log('===methods tableSortChange')
-        /*
-        const imageList = []
-        this.$refs.tableSort.tableData.forEach((item, index) => {
-          imageList.push(item.img)
-        })
-        this.imageList = imageList
-        */
       },
       setSelectRows(val) {
         console.log('===methods setSelectRows')
@@ -226,12 +173,6 @@
         } else {
           if (this.selectRows.length > 0) {
             this.$baseMessage('尚未開放此功能', 'error')
-            // const ids = this.selectRows.map((item) => item.id).join()
-            // this.$baseConfirm('你确定要删除选中项吗', null, async () => {
-            //   const { msg } = await doDelete({ ids: ids })
-            //   this.$baseMessage(msg, 'success')
-            //   this.fetchData()
-            // })
           } else {
             this.$baseMessage('未選中任何一行', 'error')
             return false
@@ -258,12 +199,12 @@
         console.log('===methods fetchData')
         this.listLoading = true
 
-        let ls_url = `${this.url}?`
+        let ls_url = `${this.url}/mainpage`
 
         if (this.queryForm.use_yn_set) {
-          ls_url += 'UseYN=Y&'
+          ls_url += '?UseYN=Y&'
         } else {
-          ls_url += 'UseYN=N&'
+          ls_url += '?UseYN=N&'
         }
 
         if (this.queryForm.searchword != '') {
@@ -279,16 +220,19 @@
           console.log(this.queryForm.type)
           ls_url += `&rating_type=${this.queryForm.type}` + '&'
         }
-
         ls_url = ls_url.substring(0, ls_url.length - 1)
 
-        //主資料
+        ls_url += `&page=${this.queryForm.pageNo}&pageSize=${this.queryForm.pageSize}`
+
         await axios
           .get(ls_url)
-          .then((response) => (this.list = response.data))
+          .then((response) => (this.return_data = response.data))
           .catch(function (error) {
             console.log(error)
           })
+
+        this.total = this.return_data.totalRecords
+        this.list = this.return_data.data
 
         let ls_url2 = `${this.url2}?UseYN=Y`
 
@@ -300,52 +244,9 @@
             console.log(error)
           })
 
-        /*
-        const imageList = []
-        data.forEach((item, index) => {
-          imageList.push(item.img)
-        })
-        this.imageList = imageList
-        */
-        this.total = this.list.length
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
         }, 500)
-      },
-
-      testMessage() {
-        console.log('===methods testMessage')
-        this.$baseMessage('test1', 'success')
-      },
-
-      testALert() {
-        console.log('===methods testALert')
-        this.$baseAlert('11')
-        this.$baseAlert('11', '自定義標題', () => {
-          /* 可以写回调; */
-        })
-        this.$baseAlert('11', null, () => {
-          /* 可以写回调; */
-        })
-      },
-
-      testConfirm() {
-        console.log('===methods testConfirm')
-        this.$baseConfirm(
-          '你确定要执行该操作?',
-          null,
-          () => {
-            /* 可以写回调; */
-          },
-          () => {
-            /* 可以写回调; */
-          }
-        )
-      },
-
-      testNotify() {
-        console.log('===methods testNotify')
-        this.$baseNotify('测试消息提示', 'test', 'success', 'bottom-right')
       },
     },
   }

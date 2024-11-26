@@ -21,12 +21,6 @@
       <vab-query-form-left-panel>
         <el-button icon="el-icon-plus" type="primary" @click="handleAdd">新增</el-button>
         <el-button icon="el-icon-delete" type="danger" @click="handleDelete">删除</el-button>
-        <!--
-        <el-button type="primary" @click="testMessage">baseMessage</el-button>
-        <el-button type="primary" @click="testALert">baseAlert</el-button>
-        <el-button type="primary" @click="testConfirm">baseConfirm</el-button>
-        <el-button type="primary" @click="testNotify">baseNotify</el-button>
-        -->
       </vab-query-form-left-panel>
     </vab-query-form>
 
@@ -59,15 +53,7 @@
       </el-table-column>
       -->
       <el-table-column label="敘述" prop="content" show-overflow-tooltip />
-      <el-table-column label="啟用" prop="use_yn" show-overflow-tooltip>
-        <template #default="{ row }">
-          <vab-icon v-show="row.use_yn" :icon="['fas', 'check']" />
-          <vab-icon v-show="!row.use_yn" :icon="['fas', 'times']" />
-          <!--<span>{{ row.use_yn ? '是' : '否' }}</span>-->
-        </template>
-      </el-table-column>
-      <el-table-column label="排序" prop="sort" show-overflow-tooltip sortable />
-      <el-table-column label="更新時間" prop="upd_date" show-overflow-tooltip sortable width="200" />
+      <el-table-column label="排序" prop="sort" show-overflow-tooltip sortable width="95" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
         <template #default="{ row }">
           <el-button type="text" @click="handleEdit(row)">編輯</el-button>
@@ -84,7 +70,7 @@
       @current-change="handleCurrentChange"
       @size-change="handleSizeChange"
     />
-    <table-edit ref="edit" />
+    <table-edit ref="edit" @trigger-handleQuery="handleQuery" />
   </div>
 </template>
 
@@ -97,19 +83,11 @@
     components: {
       TableEdit,
     },
-    filters: {
-      statusFilter(status) {
-        const statusMap = {
-          published: 'success',
-          draft: 'gray',
-          deleted: 'danger',
-        }
-        return statusMap[status]
-      },
-    },
+    filters: {},
     data() {
       return {
         url: 'http://localhost:5252/api/device',
+        return_data: '',
         return_msg: '',
         return_success: '',
         imgShow: true,
@@ -123,7 +101,7 @@
         elementLoadingText: '正在加載...',
         queryForm: {
           pageNo: 1,
-          pageSize: 20,
+          pageSize: 10,
           searchword: '',
           use_yn_set: true,
         },
@@ -135,15 +113,6 @@
         return this.$baseTableHeight()
       },
     },
-    // watch: {
-    //   list (newVal, oldVal) {
-    //     console.log("===watch list");
-    //     this.list.forEach((item, index) => {
-    //       item.upd_date = this.datetimeformat(item.upd_date);
-    //       item.create_dt = this.datetimeformat(item.create_dt);
-    //     })
-    //   }
-    // },
     created() {
       console.log('===created')
       this.fetchData()
@@ -156,28 +125,8 @@
       console.log('===mounted')
     },
     methods: {
-      // datetimeformat(dateString){
-      //   if(!dateString){
-      //     return "";
-      //   }else{
-      //     const date = new Date(dateString);
-      //     const year = date.getFullYear();
-      //     const month = String(date.getMonth() + 1).padStart(2, '0');
-      //     const day = String(date.getDate()).padStart(2, '0');
-      //     const hours = String(date.getHours()).padStart(2, '0');
-      //     const minutes = String(date.getMinutes()).padStart(2, '0');
-      //     return `${year}-${month}-${day} ${hours}:${minutes}`;
-      //   }
-      // },
       tableSortChange() {
         console.log('===methods tableSortChange')
-        /*
-        const imageList = []
-        this.$refs.tableSort.tableData.forEach((item, index) => {
-          imageList.push(item.img)
-        })
-        this.imageList = imageList
-        */
       },
       setSelectRows(val) {
         console.log('===methods setSelectRows')
@@ -256,7 +205,7 @@
         console.log('===methods fetchData')
         this.listLoading = true
 
-        let ls_url = this.url
+        let ls_url = `${this.url}/mainpage`
 
         if (this.queryForm.use_yn_set) {
           ls_url += '?UseYN=Y'
@@ -268,21 +217,18 @@
           ls_url += `&searchword=${this.queryForm.searchword}`
         }
 
+        ls_url += `&page=${this.queryForm.pageNo}&pageSize=${this.queryForm.pageSize}`
+
         await axios
           .get(ls_url)
-          .then((response) => (this.list = response.data))
+          .then((response) => (this.return_data = response.data))
           .catch(function (error) {
             console.log(error)
           })
 
-        /*
-        const imageList = []
-        data.forEach((item, index) => {
-          imageList.push(item.img)
-        })
-        this.imageList = imageList
-        */
-        this.total = this.list.length
+        this.total = this.return_data.totalRecords
+        this.list = this.return_data.data
+
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
         }, 500)

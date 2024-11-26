@@ -1,6 +1,9 @@
 <template>
   <el-dialog :title="title" :visible.sync="dialogFormVisible" width="500px" @close="close">
     <el-form ref="form" label-width="80px" :model="form" :rules="rules">
+      <el-form-item label="代碼">
+        <el-input v-model.number="esc_id" autocomplete="off" :disabled="true" maxlength="6" type="number" />
+      </el-form-item>
       <el-form-item label="代碼" prop="esps_Id">
         <el-input v-model.number="form.esps_Id" autocomplete="off" :disabled="true" maxlength="6" type="number" />
       </el-form-item>
@@ -26,6 +29,7 @@
     data() {
       return {
         url: 'http://localhost:5252/api/export_set_product_series',
+        esc_id: 0,
         esps_id: 0,
         params: '',
         return_msg: '',
@@ -59,6 +63,7 @@
           this.form_lock = true
           this.dialogFormVisible = true
 
+          this.esc_id = row.esC_id
           this.esps_id = row.id
 
           let ls_url = `${this.url}/getbyid/${this.esps_id}`

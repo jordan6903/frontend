@@ -24,7 +24,12 @@
         <el-form-item label="屬性" required>
           <el-col :span="16">
             <el-select v-model="form_website.type_id" filterable placeholder="請選擇屬性(必填)">
-              <el-option v-for="data in type_Website" :key="data.type_id" :label="data.type_id + ' ' + data.name" :value="data.type_id" />
+              <el-option
+                v-for="data in type_WebsiteFilter"
+                :key="data.type_id"
+                :label="data.type_id + ' ' + data.name"
+                :value="data.type_id"
+              />
             </el-select>
           </el-col>
         </el-form-item>
@@ -79,7 +84,7 @@
           name: '',
           url: '',
           remark: '',
-          use_yn: false,
+          use_yn: true,
           sort: 0,
         },
         form_website_pure: {
@@ -88,7 +93,7 @@
           name: '',
           url: '',
           remark: '',
-          use_yn: false,
+          use_yn: true,
           sort: 0,
         },
         form_lock: false,
@@ -100,6 +105,14 @@
         title: '',
         dialogFormVisible: false,
       }
+    },
+    computed: {
+      type_WebsiteFilter() {
+        let DataArry = this.type_Website.filter(
+          (item) => item.type_id.substring(0, 1) == 'P' && parseInt(item.type_id.substring(1, 3)) <= 40
+        )
+        return DataArry
+      },
     },
     created() {},
     methods: {
@@ -121,10 +134,7 @@
       },
       close() {
         console.log('===close')
-        this.$refs['form'].resetFields()
-        this.form = this.$options.data().form
         this.dialogFormVisible = false
-        this.$emit('fetch-data')
       },
       toUpperCase(event) {
         this.form.voice_id = event.toUpperCase()
@@ -208,7 +218,7 @@
 
         //成功就重整
         if (this.return_success == 'Y') {
-          this.form_website = this.form_website_pure //清空
+          this.form_website = JSON.parse(JSON.stringify(this.form_website_pure)) //清空
           this.newWebsite_show = false
           this.getWebsite()
         }

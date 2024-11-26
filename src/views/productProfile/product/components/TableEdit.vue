@@ -60,7 +60,7 @@
             <el-input v-model.trim="form.c_Name" autocomplete="off" maxlength="200" />
           </el-form-item>
           <el-form-item v-if="!form_lock" label="初回發售日">
-            <el-input v-model.trim="form_other.release.sale_Date" autocomplete="off" maxlength="8" />
+            <el-input v-model.trim="form_other.release.sale_Date" autocomplete="off" @input="formatDate" />
           </el-form-item>
           <el-form-item label="介紹" prop="content">
             <el-input v-model="form.content" autocomplete="off" maxlength="300" type="textarea" />
@@ -344,10 +344,10 @@
               <el-input v-model.trim="form_other.release.name" autocomplete="off" maxlength="200" />
             </el-form-item>
             <el-form-item label="發售日" required>
-              <el-input v-model.trim="form_other.release.sale_Date" autocomplete="off" maxlength="8" />
+              <el-input v-model.trim="form_other.release.sale_Date" autocomplete="off" @input="formatDate" />
             </el-form-item>
             <el-form-item label="開放預售">
-              <el-input v-model.trim="form_other.release.presale_Date" autocomplete="off" maxlength="8" />
+              <el-input v-model.trim="form_other.release.presale_Date" autocomplete="off" @input="formatDate2" />
             </el-form-item>
             <el-form-item label="初回標記" required>
               <el-switch v-model="form_other.release.official_First" />
@@ -619,7 +619,7 @@
             name: '',
             url: '',
             remark: '',
-            use_yn: false,
+            use_yn: true,
             sort: 0,
           },
           pic: {
@@ -630,7 +630,7 @@
             width: 0,
             height: 0,
             remark: '',
-            use_yn: false,
+            use_yn: true,
             sort: 0,
           },
           type: '',
@@ -695,7 +695,7 @@
             name: '',
             url: '',
             remark: '',
-            use_yn: false,
+            use_yn: true,
             sort: 0,
           },
           pic: {
@@ -706,7 +706,7 @@
             width: 0,
             height: 0,
             remark: '',
-            use_yn: false,
+            use_yn: true,
             sort: 0,
           },
           type: '',
@@ -1204,6 +1204,24 @@
       },
       toUpperCase(event) {
         this.form.p_id = event.toUpperCase()
+      },
+      formatDate() {
+        //去掉除數字以外的字串
+        this.form_other.release.sale_Date = this.form_other.release.sale_Date.replace(/[^0-9]/g, '')
+
+        //字串長度大於8就縮短成8
+        if (this.form_other.release.sale_Date.length > 8) {
+          this.form_other.release.sale_Date = this.form_other.release.sale_Date.substring(0, 8)
+        }
+      },
+      formatDate2() {
+        //去掉除數字以外的字串
+        this.form_other.release.presale_Date = this.form_other.release.presale_Date.replace(/[^0-9]/g, '')
+
+        //字串長度大於8就縮短成8
+        if (this.form_other.release.presale_Date.length > 8) {
+          this.form_other.release.presale_Date = this.form_other.release.presale_Date.substring(0, 8)
+        }
       },
       async modifyPic(data) {
         console.log('===modifyPic')
