@@ -30,14 +30,9 @@
           &nbsp;&nbsp;&nbsp;&nbsp;
           <el-form-item>
             <el-button icon="el-icon-search" native-type="submit" type="primary" @click="export_start">產生預覽</el-button>
+            <el-button icon="el-icon-plus" type="danger" @click="newOther">新增其他</el-button>
           </el-form-item>
         </el-form>
-      </vab-query-form-left-panel>
-    </vab-query-form>
-
-    <vab-query-form>
-      <vab-query-form-left-panel>
-        <el-button icon="el-icon-plus" type="primary" @click="newOther">新增其他</el-button>
       </vab-query-form-left-panel>
     </vab-query-form>
 
@@ -94,6 +89,16 @@
       </el-table-column>
     </el-table>
 
+    <el-pagination
+      :background="background"
+      :current-page="queryForm.pageNo"
+      :layout="layout"
+      :page-size="queryForm.pageSize"
+      :total="total"
+      @current-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    />
+
     <company-edit ref="cedit" @trigger-handleQuery="handleQuery" />
     <product-edit ref="pedit" @trigger-handleQuery="handleQuery" />
     <export-view ref="export" />
@@ -125,13 +130,16 @@
     filters: {},
     data() {
       return {
-        url: 'http://localhost:5252/api/export_set_other/view',
+        url: 'http://localhost:5252/api/export_set_other/viewmainpage',
         url2: 'http://localhost:5252/api/export_set_other/viewp',
         url3: 'http://localhost:5252/api/export_set_other',
         url_batch: 'http://localhost:5252/api/export_set_batch',
         url_type: 'http://localhost:5252/api/export_type',
+
+        return_data: '',
         return_msg: '',
         return_success: '',
+
         imgShow: true,
         list: [],
         list_product: [],
@@ -143,9 +151,10 @@
         background: true,
         selectRows: '',
         elementLoadingText: '正在加載...',
+        layout: 'total, sizes, prev, pager, next, jumper',
         queryForm: {
           pageNo: 1,
-          pageSize: 20,
+          pageSize: 10,
           searchword: '',
           use_yn_set: true,
           sort: 0,
@@ -279,19 +288,24 @@
         console.log(ls_url2)
         console.log(url_type)
 
+        ls_url += `page=${this.queryForm.pageNo}&pageSize=${this.queryForm.pageSize}`
+
         if (this.queryForm.use_yn_set) {
-          ls_url += 'UseYN=Y'
+          ls_url += '&UseYN=Y'
         } else {
-          ls_url += 'UseYN=N'
+          ls_url += '&UseYN=N'
         }
 
         //主資料
         await axios
           .get(ls_url)
-          .then((response) => (this.list = response.data))
+          .then((response) => (this.return_data = response.data))
           .catch(function (error) {
             console.log(error)
           })
+
+        this.total = this.return_data.totalRecords
+        this.list = this.return_data.data
 
         if (this.queryForm.use_yn_set) {
           ls_url2 += 'UseYN=Y'
