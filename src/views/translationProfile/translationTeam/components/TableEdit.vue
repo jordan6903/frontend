@@ -722,17 +722,12 @@
         console.log('===save')
         this.$refs['form'].validate(async (valid) => {
           if (valid) {
-            console.log(this.form)
-
             //主檔
             if (!this.form_lock2) {
               console.log('新增')
               this.title = '新增'
               this.url = 'http://localhost:5252/api/translation_team'
               this.params = this.form
-
-              console.log(this.form)
-              console.log(this.params)
 
               await axios
                 .post(this.url, this.params)
@@ -746,9 +741,6 @@
               this.title = '編輯'
               this.url = `http://localhost:5252/api/translation_team/${this.form.id}`
               this.params = this.form
-
-              console.log(this.form)
-              console.log(this.params)
 
               await axios
                 .put(this.url, this.params)
@@ -770,8 +762,6 @@
               this.listLoading = false
             }, 500)
 
-            console.log(`maxId: ${this.maxId}`)
-
             //取得最新的id
             await axios
               .get('http://localhost:5252/api/translation_team/getnewid')
@@ -780,29 +770,16 @@
                 console.log(error)
               })
 
-            console.log(`maxId: ${this.maxId}`)
-
             //批次檔
             this.url = 'http://localhost:5252/api/translation_team_batch'
             this.params = this.batch
             let ls_url, msg_array2
 
-            console.log(this.batch)
-
             if (this.return_success == 'Y') {
-              console.log('1')
-              console.log(this.params)
-
               for (var i = 0; i < this.params.length; i++) {
-                console.log('2')
-
-                console.log(this.params[i])
-                console.log(this.params[i]['id'])
-
                 //檢查看是否有batch id
                 //已有id
                 if (this.params[i]['id'] > 0) {
-                  console.log('2.1')
                   ls_url = `${this.url}/${this.params[i]['id']}`
 
                   await axios
@@ -815,9 +792,6 @@
                 }
                 //沒有id
                 else if (this.params[i]['id'] == 0) {
-                  console.log('2.2')
-                  console.log(this.form.id)
-                  console.log(this.maxId)
                   ls_url = this.url
 
                   if (this.form.id > 0) {
@@ -825,8 +799,6 @@
                   } else {
                     this.params[i]['tT_id'] = this.maxId //給予新建的主檔id
                   }
-
-                  console.log(this.params[i]['tT_id'])
 
                   await axios
                     .post(ls_url, this.params[i])
@@ -849,8 +821,6 @@
                 }
               }
             }
-
-            console.log('3')
 
             //成功就關閉視窗
             if (this.return_success == 'Y' && this.return_success2 == 'Y') {
