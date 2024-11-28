@@ -168,6 +168,20 @@
         pickerOptions: {
           shortcuts: [
             {
+              text: '今天',
+              onClick(picker) {
+                picker.$emit('pick', [new Date(), new Date()])
+              },
+            },
+            {
+              text: '昨天',
+              onClick(picker) {
+                const date = new Date()
+                date.setTime(date.getTime() - 3600 * 1000 * 24)
+                picker.$emit('pick', [date, date])
+              },
+            },
+            {
               text: '最近一周',
               onClick(picker) {
                 const end = new Date()
@@ -194,9 +208,28 @@
                 picker.$emit('pick', [start, end])
               },
             },
+            {
+              text: '最後一次更新',
+              async onClick(picker) {
+                const end = new Date()
+                let arg
+
+                await axios
+                  .get('http://localhost:5252/api/export_set_date/getlast')
+                  .then((response) => (arg = response.data))
+                  .catch(function (error) {
+                    // 请求失败处理
+                    console.log(error)
+                  })
+                const start = new Date(arg)
+
+                picker.$emit('pick', [start, end])
+              },
+            },
           ],
         },
 
+        lastDate: '',
         listLoading: true,
         layout: 'total, sizes, prev, pager, next, jumper',
         total: 0,
@@ -337,6 +370,20 @@
           }
         }
         this.fetchData(type)
+      },
+
+      async getLastDate() {
+        console.log('getLastDate')
+
+        await axios
+          .get('http://localhost:5252/api/export_set_date/getlast')
+          .then((response) => (this.lastDate = response.data.message))
+          .catch(function (error) {
+            // 请求失败处理
+            console.log(error)
+          })
+
+        return this.lastDate
       },
 
       // 展開所有摺疊的列

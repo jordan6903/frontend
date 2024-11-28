@@ -335,11 +335,11 @@ export const asyncRoutes = [
       },
       {
         path: '/websiteProfile',
-        component: Layout,
+        component: EmptyLayout,
         redirect: 'noRedirect',
         name: 'WebsiteProfile',
         alwaysShow: true,
-        meta: { title: '外連網址與圖片', icon: 'box-open' },
+        meta: { title: '外連網址與圖片', permissions: ['admin'] },
         children: [
           {
             path: 'websiteType',
@@ -351,46 +351,46 @@ export const asyncRoutes = [
               permissions: ['admin'],
             },
           },
-          {
-            path: 'productWebsite',
-            name: 'ProductWebsite',
-            component: () => import('@/views/websiteProfile/productWebsite/index'),
-            meta: {
-              title: '遊戲網址連結',
-              icon: 'chalkboard',
-              permissions: ['admin'],
-            },
-          },
-          {
-            path: 'productPic',
-            name: 'ProductPic',
-            component: () => import('@/views/websiteProfile/productPic/index'),
-            meta: {
-              title: '遊戲圖片連結',
-              icon: 'chalkboard',
-              permissions: ['admin'],
-            },
-          },
-          {
-            path: 'companyWebsite',
-            name: 'CompanyWebsite',
-            component: () => import('@/views/websiteProfile/companyWebsite/index'),
-            meta: {
-              title: '公司網址連結',
-              icon: 'chalkboard',
-              permissions: ['admin'],
-            },
-          },
-          {
-            path: 'companyPic',
-            name: 'CompanyPic',
-            component: () => import('@/views/websiteProfile/companyPic/index'),
-            meta: {
-              title: '公司圖片連結',
-              icon: 'chalkboard',
-              permissions: ['admin'],
-            },
-          },
+          // {
+          //   path: 'productWebsite',
+          //   name: 'ProductWebsite',
+          //   component: () => import('@/views/websiteProfile/productWebsite/index'),
+          //   meta: {
+          //     title: '遊戲網址連結',
+          //     icon: 'chalkboard',
+          //     permissions: ['admin'],
+          //   },
+          // },
+          // {
+          //   path: 'productPic',
+          //   name: 'ProductPic',
+          //   component: () => import('@/views/websiteProfile/productPic/index'),
+          //   meta: {
+          //     title: '遊戲圖片連結',
+          //     icon: 'chalkboard',
+          //     permissions: ['admin'],
+          //   },
+          // },
+          // {
+          //   path: 'companyWebsite',
+          //   name: 'CompanyWebsite',
+          //   component: () => import('@/views/websiteProfile/companyWebsite/index'),
+          //   meta: {
+          //     title: '公司網址連結',
+          //     icon: 'chalkboard',
+          //     permissions: ['admin'],
+          //   },
+          // },
+          // {
+          //   path: 'companyPic',
+          //   name: 'CompanyPic',
+          //   component: () => import('@/views/websiteProfile/companyPic/index'),
+          //   meta: {
+          //     title: '公司圖片連結',
+          //     icon: 'chalkboard',
+          //     permissions: ['admin'],
+          //   },
+          // },
         ],
       },
     ],
@@ -479,6 +479,16 @@ export const asyncRoutes = [
         component: () => import('@/views/export_set/export_type/index'),
         meta: {
           title: '輸出類型設定檔 export_type',
+          icon: 'chalkboard',
+          permissions: ['admin'],
+        },
+      },
+      {
+        path: 'date_mark',
+        name: 'Date_mark',
+        component: () => import('@/views/export_set/date_mark/index'),
+        meta: {
+          title: '輸出時間標記 Export_set_date',
           icon: 'chalkboard',
           permissions: ['admin'],
         },

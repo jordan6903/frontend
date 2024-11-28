@@ -79,16 +79,6 @@
     components: {
       TableEdit,
     },
-    filters: {
-      statusFilter(status) {
-        const statusMap = {
-          published: 'success',
-          draft: 'gray',
-          deleted: 'danger',
-        }
-        return statusMap[status]
-      },
-    },
     data() {
       return {
         url: 'http://localhost:5252/api/staff',
@@ -99,9 +89,12 @@
         urlarray: {
           type: '/basicProfile/staff/staffType',
         },
+
+        return_data: '',
         return_msg: '',
         return_success: '',
         imgShow: true,
+
         list: [],
         list_type: {
           type: [],
@@ -116,7 +109,7 @@
         elementLoadingText: '正在加載...',
         queryForm: {
           pageNo: 1,
-          pageSize: 20,
+          pageSize: 10,
           searchword: '',
           type: '',
         },
@@ -212,10 +205,12 @@
         console.log('===methods fetchData')
         this.listLoading = true
 
-        let ls_url = `${this.url}?`
+        let ls_url = `${this.url}/mainpage`
+
+        ls_url += `?page=${this.queryForm.pageNo}&pageSize=${this.queryForm.pageSize}`
 
         if (this.queryForm.searchword != '') {
-          ls_url += `searchword=${this.queryForm.searchword}` + '&'
+          ls_url += `&searchword=${this.queryForm.searchword}`
         }
 
         if (
@@ -224,18 +219,19 @@
           this.queryForm.type !== undefined &&
           this.queryForm.type !== '%'
         ) {
-          ls_url += `staff_typeid=${this.queryForm.type}` + '&'
+          ls_url += `&staff_typeid=${this.queryForm.type}`
         }
-
-        ls_url = ls_url.substring(0, ls_url.length - 1)
 
         //主資料
         await axios
           .get(ls_url)
-          .then((response) => (this.list = response.data))
+          .then((response) => (this.return_data = response.data))
           .catch(function (error) {
             console.log(error)
           })
+
+        this.total = this.return_data.totalRecords
+        this.list = this.return_data.data
 
         let ls_url1 = `${this.url_type.url1}?UseYN=Y`
         let ls_url2 = `${this.url_type.url2}`
@@ -256,45 +252,9 @@
             console.log(error)
           })
 
-        this.total = this.list.length
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
         }, 500)
-      },
-
-      testMessage() {
-        console.log('===methods testMessage')
-        this.$baseMessage('test1', 'success')
-      },
-
-      testALert() {
-        console.log('===methods testALert')
-        this.$baseAlert('11')
-        this.$baseAlert('11', '自定義標題', () => {
-          /* 可以写回调; */
-        })
-        this.$baseAlert('11', null, () => {
-          /* 可以写回调; */
-        })
-      },
-
-      testConfirm() {
-        console.log('===methods testConfirm')
-        this.$baseConfirm(
-          '你确定要执行该操作?',
-          null,
-          () => {
-            /* 可以写回调; */
-          },
-          () => {
-            /* 可以写回调; */
-          }
-        )
-      },
-
-      testNotify() {
-        console.log('===methods testNotify')
-        this.$baseNotify('测试消息提示', 'test', 'success', 'bottom-right')
       },
     },
   }

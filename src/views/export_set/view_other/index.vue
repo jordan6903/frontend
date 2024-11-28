@@ -36,7 +36,7 @@
       </vab-query-form-left-panel>
     </vab-query-form>
 
-    <el-table :data="list" :height="height" :stripe="true" style="width: 100%">
+    <el-table v-loading="listLoading" :data="list" :height="height" :stripe="true" style="width: 100%">
       <el-table-column style="background: whitesmoke" type="expand">
         <template #default="props">
           <h2 style="margin-left: 50px; display: inline">子分類</h2>
@@ -146,7 +146,7 @@
         list_batch: [],
         list_type: [],
         list_count: [],
-        listLoading: true,
+        listLoading: false,
         total: 0,
         background: true,
         selectRows: '',
