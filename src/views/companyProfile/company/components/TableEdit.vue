@@ -432,10 +432,8 @@
           this.title = '編輯'
           this.form = Object.assign({}, row)
           this.form_lock = true
-          this.form_type = list_type
-
-          //await this.getWebsite();
         }
+        this.form_type = list_type
         this.dialogFormVisible = true
       },
       close() {
