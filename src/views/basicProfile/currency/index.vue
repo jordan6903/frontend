@@ -62,6 +62,7 @@
 <script>
   import { doDelete, getList } from '@/api/table'
   import TableEdit from './components/TableEdit'
+  import axios from '@/utils/request' // 引用剛才設定的 Axios 實例
 
   export default {
     name: 'Currency',

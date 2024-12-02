@@ -724,7 +724,6 @@ export const asyncRoutes = [
       icon: 'shopping-cart',
       permissions: ['admin'],
     },
-
     children: [
       {
         path: 'pay',

@@ -2,17 +2,17 @@
   <div class="login-container">
     <el-row>
       <el-col :lg="16" :md="12" :sm="24" :xl="16" :xs="24">
-        <div style="color: transparent">占位符</div>
+        <div style="color: transparent">佔位符</div>
       </el-col>
       <el-col :lg="8" :md="12" :sm="24" :xl="8" :xs="24">
         <el-form ref="form" class="login-form" label-position="left" :model="form" :rules="rules">
           <div class="title">hello !</div>
-          <div class="title-tips">欢迎来到{{ title }}！</div>
+          <div class="title-tips">歡迎來到{{ title }}！</div>
           <el-form-item prop="username" style="margin-top: 40px">
             <span class="svg-container svg-container-admin">
               <vab-icon :icon="['fas', 'user']" />
             </span>
-            <el-input v-model.trim="form.username" v-focus placeholder="请输入用户名" tabindex="1" type="text" />
+            <el-input v-model.trim="form.username" v-focus placeholder="請輸入帳號" tabindex="1" type="text" />
           </el-form-item>
           <el-form-item prop="password">
             <span class="svg-container">
@@ -22,7 +22,7 @@
               :key="passwordType"
               ref="password"
               v-model.trim="form.password"
-              placeholder="请输入密码"
+              placeholder="請輸入密碼"
               tabindex="2"
               :type="passwordType"
               @keyup.enter.native="handleLogin"
@@ -34,9 +34,9 @@
               <vab-icon :icon="['fas', 'eye']" />
             </span>
           </el-form-item>
-          <el-button class="login-btn" :loading="loading" type="primary" @click="handleLogin">登录</el-button>
+          <el-button class="login-btn" :loading="loading" type="primary" @click="handleLogin">登入</el-button>
           <router-link to="/register">
-            <div style="margin-top: 20px">注册</div>
+            <div style="margin-top: 20px">註冊</div>
           </router-link>
         </el-form>
       </el-col>
@@ -59,19 +59,20 @@
     data() {
       const validateusername = (rule, value, callback) => {
         if ('' == value) {
-          callback(new Error('用户名不能为空'))
+          callback(new Error('帳號不能空白'))
         } else {
           callback()
         }
       }
       const validatePassword = (rule, value, callback) => {
         if (!isPassword(value)) {
-          callback(new Error('密码不能少于6位'))
+          callback(new Error('密碼不能少於6位'))
         } else {
           callback()
         }
       }
       return {
+        return_data: '',
         nodeEnv: process.env.NODE_ENV,
         title: this.$baseTitle,
         form: {
@@ -116,11 +117,11 @@
       clearTimeout(this.timeOutID)
     },
     mounted() {
-      this.form.username = 'admin'
-      this.form.password = '123456'
-      this.timeOutID = setTimeout(() => {
-        this.handleLogin()
-      }, 3000)
+      // this.form.username = 'admin'
+      // this.form.password = '123456'
+      // this.timeOutID = setTimeout(() => {
+      //   this.handleLogin()
+      // }, 3000)
     },
     methods: {
       handlePassword() {
@@ -130,11 +131,23 @@
         })
       },
       handleLogin() {
-        this.$refs.form.validate((valid) => {
+        this.$refs.form.validate(async (valid) => {
           if (valid) {
             this.loading = true
-            this.$store
-              .dispatch('user/login', this.form)
+
+            await this.$store
+              .dispatch('user/mylogin', this.form)
+              .then(() => {
+                const routerPath = this.redirect === '/404' || this.redirect === '/401' ? '/' : this.redirect
+                this.$router.push(routerPath).catch(() => {})
+                this.loading = false
+              })
+              .catch(() => {
+                this.loading = false
+              })
+
+            await this.$store
+              .dispatch('user/getUserInfo', this.form)
               .then(() => {
                 const routerPath = this.redirect === '/404' || this.redirect === '/401' ? '/' : this.redirect
                 this.$router.push(routerPath).catch(() => {})

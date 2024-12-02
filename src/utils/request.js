@@ -50,6 +50,23 @@ const instance = axios.create({
   },
 })
 
+// 請求攔截器
+instance.interceptors.request.use(
+  (config) => {
+    // 從 localStorage 取出 Token
+    const token = localStorage.getItem('myToken')
+    if (token) {
+      // 如果有 Token，將其加入 Authorization Header
+      config.headers['Authorization'] = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    // 請求錯誤時返回 Promise 拒絕
+    return Promise.reject(error)
+  }
+)
+
 instance.interceptors.request.use(
   (config) => {
     if (store.getters['user/accessToken']) {

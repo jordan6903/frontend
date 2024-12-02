@@ -52,6 +52,30 @@ const actions = {
       Vue.prototype.$baseMessage(`登录接口异常，未正确返回${tokenName}...`, 'error')
     }
   },
+  async mylogin({ commit }, userInfo) {
+    let return_data
+
+    //登入
+    await axios
+      .post('http://localhost:5252/api/login/check', userInfo)
+      .then((response) => (return_data = response.data))
+      .catch(function (error) {
+        console.log(error)
+      })
+
+    console.log(return_data)
+
+    let success = return_data.isAuthSuccessful
+    let error = return_data.errorMessage
+    let accessToken = return_data.token
+
+    if (accessToken) {
+      commit('setAccessToken', accessToken)
+      Vue.prototype.$baseNotify(`歡迎登入GalDB！`)
+    } else {
+      Vue.prototype.$baseMessage(error, 'error')
+    }
+  },
   async getUserInfo({ commit, state }) {
     const { data } = await getUserInfo(state.accessToken)
     if (!data) {
