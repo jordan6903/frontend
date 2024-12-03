@@ -261,6 +261,7 @@
 
 <script>
   import { doEdit } from '@/api/table'
+  import axios from '@/utils/request2'
 
   export default {
     name: 'TableEdit',
@@ -366,6 +367,17 @@
         },
 
         //清空複製用
+        form_pure: {
+          c_id: '',
+          c_type: '',
+          name: '',
+          name_origin: '',
+          name_short: '',
+          intro: '',
+          remark: '',
+          sdate: '',
+          edate: '',
+        },
         form_website_pure: {
           c_id: '',
           type_id: '',
@@ -427,6 +439,7 @@
         console.log(list_type)
         if (!row) {
           this.title = '新增'
+          this.form = this.form_pure //清空
           this.form_lock = false
         } else {
           this.title = '編輯'

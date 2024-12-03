@@ -116,6 +116,7 @@
   import ExportView2 from './components/ExportView2'
   import ExportView3 from './components/ExportView3'
   import AddwordEdit from './components/AddwordEdit'
+  import axios from '@/utils/request2'
 
   export default {
     name: 'ViewOther',

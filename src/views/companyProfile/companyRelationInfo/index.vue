@@ -69,6 +69,7 @@
 <script>
   import { doDelete, getList } from '@/api/table'
   import TableEdit from './components/TableEdit'
+  import axios from '@/utils/request2'
 
   export default {
     name: 'CompanyRelationInfo',
@@ -224,41 +225,6 @@
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
         }, 500)
-      },
-
-      testMessage() {
-        console.log('===methods testMessage')
-        this.$baseMessage('test1', 'success')
-      },
-
-      testALert() {
-        console.log('===methods testALert')
-        this.$baseAlert('11')
-        this.$baseAlert('11', '自定義標題', () => {
-          /* 可以写回调; */
-        })
-        this.$baseAlert('11', null, () => {
-          /* 可以写回调; */
-        })
-      },
-
-      testConfirm() {
-        console.log('===methods testConfirm')
-        this.$baseConfirm(
-          '你确定要执行该操作?',
-          null,
-          () => {
-            /* 可以写回调; */
-          },
-          () => {
-            /* 可以写回调; */
-          }
-        )
-      },
-
-      testNotify() {
-        console.log('===methods testNotify')
-        this.$baseNotify('测试消息提示', 'test', 'success', 'bottom-right')
       },
     },
   }

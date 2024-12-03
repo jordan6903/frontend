@@ -36,22 +36,8 @@
     >
       <el-table-column show-overflow-tooltip type="selection" width="55" />
       <el-table-column label="代碼" prop="device_id" show-overflow-tooltip sortable width="95" />
-      <!--
-      <el-table-column label="代碼" prop="device_id" show-overflow-tooltip width="95">
-        <template #default="scope">
-          {{ scope.$index + 1 }}
-        </template>
-      </el-table-column>
-      -->
       <el-table-column label="名稱" prop="fullName" show-overflow-tooltip />
       <el-table-column label="簡稱" prop="shortName" show-overflow-tooltip />
-      <!--
-      <el-table-column label="头像" show-overflow-tooltip>
-        <template #default="{ row }">
-          <el-image v-if="imgShow" :preview-src-list="imageList" :src="row.img" />
-        </template>
-      </el-table-column>
-      -->
       <el-table-column label="敘述" prop="content" show-overflow-tooltip />
       <el-table-column label="排序" prop="sort" show-overflow-tooltip sortable width="95" />
       <el-table-column label="操作" show-overflow-tooltip width="180px">
@@ -77,6 +63,7 @@
 <script>
   import { doDelete, getList } from '@/api/table'
   import TableEdit from './components/TableEdit'
+  import axios from '@/utils/request2'
 
   export default {
     name: 'Device',
@@ -232,41 +219,6 @@
         this.timeOutID = setTimeout(() => {
           this.listLoading = false
         }, 500)
-      },
-
-      testMessage() {
-        console.log('===methods testMessage')
-        this.$baseMessage('test1', 'success')
-      },
-
-      testALert() {
-        console.log('===methods testALert')
-        this.$baseAlert('11')
-        this.$baseAlert('11', '自定義標題', () => {
-          /* 可以写回调; */
-        })
-        this.$baseAlert('11', null, () => {
-          /* 可以写回调; */
-        })
-      },
-
-      testConfirm() {
-        console.log('===methods testConfirm')
-        this.$baseConfirm(
-          '你确定要执行该操作?',
-          null,
-          () => {
-            /* 可以写回调; */
-          },
-          () => {
-            /* 可以写回调; */
-          }
-        )
-      },
-
-      testNotify() {
-        console.log('===methods testNotify')
-        this.$baseNotify('测试消息提示', 'test', 'success', 'bottom-right')
       },
     },
   }

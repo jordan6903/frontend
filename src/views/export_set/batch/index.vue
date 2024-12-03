@@ -66,6 +66,7 @@
   import TableEdit from './components/TableEdit'
   import ExportCopy from './components/ExportCopy'
   import ExportCopyOther from './components/ExportCopyOther'
+  import axios from '@/utils/request2'
 
   export default {
     name: 'Batch',

@@ -45,6 +45,7 @@
 
 <script>
   import { doEdit } from '@/api/table'
+  import axios from '@/utils/request2'
 
   export default {
     name: 'TableEdit',
@@ -113,9 +114,6 @@
               this.url = 'http://localhost:5252/api/product_type_info'
               this.params = this.form
 
-              console.log(this.form)
-              console.log(this.params)
-
               await axios
                 .post(this.url, this.params)
                 .then((response) => (this.return_msg = response.data.message))
@@ -128,9 +126,6 @@
               this.title = '編輯'
               this.url = `http://localhost:5252/api/product_type_info/${this.form.p_type_id}`
               this.params = this.form
-
-              console.log(this.form)
-              console.log(this.params)
 
               await axios
                 .put(this.url, this.params)

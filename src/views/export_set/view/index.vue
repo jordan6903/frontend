@@ -16,11 +16,15 @@
           <el-form-item>
             <el-input v-model="queryForm.searchword" placeholder="輸入關鍵字..." />
           </el-form-item>
-          &nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;
           <el-form-item label="啟用">
             <el-switch v-model="queryForm.use_yn_set" />
           </el-form-item>
-          &nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;
+          <el-form-item label="查詢後回到第一頁">
+            <el-switch v-model="queryForm.query_set" />
+          </el-form-item>
+          &nbsp;&nbsp;
           <el-form-item>
             <el-button icon="el-icon-search" native-type="submit" type="primary" @click="handleQuery">查詢</el-button>
           </el-form-item>
@@ -129,6 +133,7 @@
   import ExportView3 from './components/ExportView3'
   import ShowRest from './components/ShowRest'
   import AddwordEdit from './components/AddwordEdit'
+  import axios from '@/utils/request2'
 
   export default {
     name: 'View',
@@ -177,6 +182,7 @@
           pageSize: 10,
           searchword: '',
           use_yn_set: true,
+          query_set: true,
           sort: 0,
           batch: '',
         },
@@ -277,7 +283,9 @@
       },
       handleQuery() {
         console.log('===methods handleQuery')
-        this.queryForm.pageNo = 1
+        if (this.queryForm.query_set == true || this.queryForm.searchword != '') {
+          this.queryForm.pageNo = 1
+        }
         this.fetchData()
       },
 

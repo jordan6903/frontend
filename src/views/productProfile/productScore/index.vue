@@ -65,6 +65,7 @@
 <script>
   import { doDelete, getList } from '@/api/table'
   import TableEdit from './components/TableEdit'
+  import axios from '@/utils/request2'
 
   export default {
     name: 'ProductScore',

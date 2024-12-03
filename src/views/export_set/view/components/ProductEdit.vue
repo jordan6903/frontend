@@ -19,24 +19,33 @@
             <span>存入遊戲</span>
             <div>
               <el-tag class="tagbtn" effect="dark" @click="notify_title">修改標頭</el-tag>
-              <el-tag class="tagbtn" @click="show_doujin2">同人</el-tag>
-              <el-tag class="tagbtn" @click="show_TT2">漢化</el-tag>
-              <el-tag class="tagbtn" @click="show_detail2">細節</el-tag>
+              <el-tag class="tagbtn" @click="set_drag">{{ draggable ? '關閉拖曳' : '開啟拖曳' }}</el-tag>
+              <el-tag class="tagbtn" @click="show_detail2">顯示細節</el-tag>
               <el-tag class="tagbtn" @click="show_series_btn">子分類</el-tag>
               <el-tag class="tagbtn" @click="fetchData">重整</el-tag>
-              <el-tag class="tagbtn" @click="list_sort">排序</el-tag>
+              <el-tag class="tagbtn" @click="show_sort_btn">排序</el-tag>
             </div>
+          </div>
+          <div v-show="detail_btn_show" class="div_search_left">
+            <el-tag class="tagbtn" effect="dark" @click="show_doujin2">同人</el-tag>
+            <el-tag class="tagbtn" effect="dark" @click="show_TT2">漢化</el-tag>
+            <el-tag class="tagbtn" effect="dark" @click="show_company2">公司</el-tag>
+            <el-tag class="tagbtn" effect="dark" @click="show_saleDate2">發售日</el-tag>
           </div>
           <div v-show="series_btn_show" class="div_search_left">
             <el-tag class="tagbtn" effect="dark" @click="notify_series('add')">新增</el-tag>
             <el-tag class="tagbtn" effect="dark" @click="notify_series('update')">改名</el-tag>
             <el-tag class="tagbtn" effect="dark" @click="delete_series">刪除</el-tag>
           </div>
+          <div v-show="sort_btn_show" class="div_search_left">
+            <el-tag class="tagbtn" @click="list_sort">一般排序</el-tag>
+            <el-tag class="tagbtn" @click="list_sort2">公司>時間排序</el-tag>
+          </div>
           <div class="div_item_group2">
             <div v-for="(series, sindex) in slist" :key="series.esps_Id" class="div_item2">
               <div
                 class="div_item_left"
-                draggable="true"
+                :draggable="draggable"
                 @dragend="dragEnd"
                 @dragover="allowDrop"
                 @dragstart="dragStart($event, sindex, 'Series')"
@@ -59,7 +68,7 @@
                 v-show="esc_show"
                 :key="product.esp_id"
                 class="div_product_data"
-                draggable="true"
+                :draggable="draggable"
                 @dragend="dragEnd"
                 @dragover="allowDrop"
                 @dragstart="dragStart($event, pindex, 'Product', sindex)"
@@ -68,8 +77,8 @@
                 <input v-model="left_select_product" class="checkbox" name="list" type="checkbox" :value="product.esp_id" />
                 <label :for="product.esp_Id" :title="product.p_Name">
                   <span v-if="product.eso_chk" style="color: red">(其他已有)&nbsp;</span>
-                  <span v-if="detail_show2" style="color: darkred">{{ filteredDate(product.sale_Date) }}&nbsp;</span>
-                  <span v-if="detail_show2" style="color: #2448ff">{{ product.c_Name }}&nbsp;</span>
+                  <span v-if="saleDate_show2" style="color: darkred">{{ filteredDate(product.sale_Date) }}&nbsp;</span>
+                  <span v-if="company_show2" style="color: #2448ff">{{ product.c_Name }}&nbsp;</span>
                   <div v-if="TT_show2" class="TT_div">
                     <el-tag
                       v-for="(tt, index) in product.tT_type"
@@ -116,8 +125,13 @@
           <div class="div_title">
             <span>選擇遊戲</span>
             <div>
-              <el-tag v-show="allProduct_show" class="tagbtn" @click="show_allProduct_other">隱藏其他</el-tag>
-              <el-tag class="tagbtn" @click="show_allProduct">其他列表</el-tag>
+              <el-tag class="tagbtn" @click="show_update">{{ update_show ? '顯示全部' : '只列出更新' }}</el-tag>
+              <el-tooltip placement="top">
+                <div slot="content">
+                  <a @click="show_allProduct_other">隱藏其他已有標籤</a>
+                </div>
+                <el-tag class="tagbtn" @click="show_allProduct">其他列表</el-tag>
+              </el-tooltip>
 
               <el-tooltip placement="top">
                 <div slot="content">
@@ -180,6 +194,7 @@
 
 <script>
   import { doEdit } from '@/api/table'
+  import axios from '@/utils/request2'
 
   export default {
     name: 'ProductEdit',
@@ -219,11 +234,19 @@
         series_notify_type: '',
         series_input_name: '',
         series_btn_show: false,
+        detail_btn_show: false,
+        sort_btn_show: false,
         esc_show: true,
         titleInput_show: false,
         allProduct_show: false,
         allProduct_other_show: false,
+        draggable: true,
+        update_show: false,
 
+        company_show: false,
+        company_show2: false,
+        saleDate_show: false,
+        saleDate_show2: false,
         detail_show: false,
         detail_show2: false,
         TT_show: false,
@@ -233,8 +256,8 @@
         doujin_show2: false,
         doujin_show_modify_type: '',
 
-        //中間插入sort
-        insert_row: 0,
+        lastupdate: '', //最後一次標記的更新日期
+        insert_row: 0, //中間插入sort
 
         params: '',
         return_msg: '',
@@ -268,7 +291,10 @@
               : item.tT_type.some((tt) => tt.type_id === 1 || tt.type_id === 3 || tt.type_id === 6 || tt.type_id === 8)) &&
             (this.doujin_show_modify_type == '' ||
               (this.doujin_show_modify_type == 'A' && item.p_id.substring(0, 1) == 'A') ||
-              (this.doujin_show_modify_type == 'B' && item.p_id.substring(0, 1) == 'B'))
+              (this.doujin_show_modify_type == 'B' && item.p_id.substring(0, 1) == 'B')) &&
+            //顯示最近更新
+            (this.update_show == false ||
+              (this.update_show == true && item.tT_type.some((tt) => tt.upd_date && new Date(tt.upd_date) > new Date(this.lastupdate))))
         )
         return DataArry
       },
@@ -523,6 +549,15 @@
             console.log(error)
           })
 
+        //取出最後一次標點的日期
+        await axios
+          .get('http://localhost:5252/api/export_set_date/getlast')
+          .then((response) => (this.lastupdate = response.data))
+          .catch(function (error) {
+            // 请求失败处理
+            console.log(error)
+          })
+
         this.generateData()
         //this.setPdata();
 
@@ -551,6 +586,14 @@
         console.log('===close')
         this.$emit('trigger-handleQuery')
       },
+      show_update() {
+        console.log('show_update')
+        if (this.update_show) {
+          this.update_show = false
+        } else {
+          this.update_show = true
+        }
+      },
       show_detail() {
         console.log('show_detail')
         if (this.detail_show) {
@@ -561,11 +604,16 @@
       },
       show_detail2() {
         console.log('show_detail2')
-        if (this.detail_show2) {
-          this.detail_show2 = false
+        if (this.detail_btn_show) {
+          this.detail_btn_show = false
+          this.search_btn_show = true
         } else {
-          this.detail_show2 = true
+          this.detail_btn_show = true
+          this.search_btn_show = false
         }
+        this.sort_btn_show = false
+        this.series_btn_show = false
+        this.esc_show = true
       },
       show_TT() {
         console.log('show_TT')
@@ -583,6 +631,23 @@
           this.TT_show2 = true
         }
       },
+      show_saleDate2() {
+        console.log('show_saleDate2')
+        if (this.saleDate_show2) {
+          this.saleDate_show2 = false
+        } else {
+          this.saleDate_show2 = true
+        }
+      },
+      show_company2() {
+        console.log('show_company2')
+        if (this.company_show2) {
+          this.company_show2 = false
+        } else {
+          this.company_show2 = true
+        }
+      },
+
       TT_show_modify(type) {
         console.log(`TT_show_modify type: ${type}`)
         this.TT_show_modify_type = type
@@ -636,6 +701,30 @@
           this.series_btn_show = true
           this.esc_show = false
         }
+        this.sort_btn_show = false
+        this.detail_btn_show = false
+      },
+
+      set_drag() {
+        console.log('set_drag')
+        if (this.draggable) {
+          this.draggable = false
+        } else {
+          this.draggable = true
+        }
+      },
+
+      show_sort_btn() {
+        if (this.sort_btn_show) {
+          this.sort_btn_show = false
+          this.search_btn_show = true
+        } else {
+          this.sort_btn_show = true
+          this.search_btn_show = false
+        }
+        this.detail_btn_show = false
+        this.series_btn_show = false
+        this.esc_show = true
       },
 
       show_allProduct() {
@@ -708,6 +797,38 @@
             for (let j = 0; j < this.slist[i]['product_data'].length; j++) {
               this.slist[i]['product_data'][j].sort = j + 1
               this.slist[i]['product_data'][j]['esps_id'] = esps_id
+            }
+          }
+        }
+        this.save()
+
+        setTimeout(() => {
+          this.fetchData()
+        }, 500)
+      },
+
+      //重新排序()
+      list_sort2() {
+        console.log('list_sort2')
+        console.log(this.slist)
+
+        for (let i = 0; i < this.slist.length; i++) {
+          let esos_id = this.slist[i]['esps_Id']
+          this.slist[i].sort = i + 1
+
+          let data = this.slist[i]['product_data']
+
+          if (data.length > 0) {
+            //排序: 公司優先、發售日次要
+            data.sort((a, b) => {
+              if (a.c_Name < b.c_Name) return -1
+              if (a.c_Name > b.c_Name) return 1
+              return a.sale_Date - b.sale_Date // c_Name 相同時，根據sale_Date排序
+            })
+
+            for (let j = 0; j < data.length; j++) {
+              data[j].sort = j + 1
+              data[j]['esos_id'] = esos_id
             }
           }
         }

@@ -519,6 +519,7 @@
 
 <script>
   import { doEdit } from '@/api/table'
+  import axios from '@/utils/request2'
 
   export default {
     name: 'TableEdit',

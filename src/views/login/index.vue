@@ -145,17 +145,6 @@
               .catch(() => {
                 this.loading = false
               })
-
-            await this.$store
-              .dispatch('user/getUserInfo', this.form)
-              .then(() => {
-                const routerPath = this.redirect === '/404' || this.redirect === '/401' ? '/' : this.redirect
-                this.$router.push(routerPath).catch(() => {})
-                this.loading = false
-              })
-              .catch(() => {
-                this.loading = false
-              })
           } else {
             return false
           }
